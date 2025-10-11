@@ -1,0 +1,194 @@
+.date-selector {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    padding: 15px;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow);
+    position: relative; // Added for absolute positioning of the modal
+
+    .date-navigation {
+        display: flex;
+        gap: 15px;
+        .date-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: var(--text);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            &:hover {
+                background: var(--accent);
+                transform: translateY(-2px);
+            }
+
+            @media screen and (max-width: 375px) {
+                width: 30px;
+                height: 30px;
+            }
+        }
+
+        .current-date {
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-align: center;
+            min-width: 200px;
+            @media screen and (max-width: 576px) {
+                font-size: 0.9rem;
+                font-weight: 500;
+            }
+        }
+    }
+    .date-calendar {
+        background: var(--accent);
+        border: none;
+        padding: 10px 20px;
+        border-radius: 30px;
+        color: var(--text);
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+        &:hover {
+            background: #2a4db0;
+            transform: translateY(-2px);
+        }
+    }
+
+    // Date Picker Modal Styles
+    .date-picker-modal {
+        position: absolute;
+        top: calc(100% + 10px);
+        right: 0;
+        background: var(--card-bg);
+        border: 1px solid var(--accent);
+        border-radius: var(--border-radius);
+        padding: 15px;
+        z-index: 1000;
+        box-shadow: var(--shadow);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 280px;
+
+        input[type="date"] {
+            background: var(--bg);
+            border: 1px solid var(--accent);
+            border-radius: var(--border-radius);
+            padding: 8px 12px;
+            color: var(--text);
+            font-size: 0.9rem;
+            flex: 1;
+
+            &::-webkit-calendar-picker-indicator {
+                filter: invert(0.8);
+                cursor: pointer;
+            }
+        }
+
+        button {
+            background: var(--highlight);
+            border: none;
+            padding: 8px 15px;
+            border-radius: var(--border-radius);
+            color: white;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+            white-space: nowrap;
+
+            &:hover {
+                background: #ff6b35;
+                transform: translateY(-1px);
+            }
+        }
+    }
+}
+
+/* Filters and Controls */
+.controls {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+    gap: 10px;
+    //flex-wrap: wrap;
+
+    .filters{
+        margin-bottom: 0px;
+    }
+
+    .search-box {
+        background: var(--card-bg);
+        border-radius: 30px;
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 250px;
+        height: fit-content;
+        input {
+            background: transparent;
+            border: none;
+            color: var(--text);
+            width: 100%;
+            outline: none;
+            font-size: 1rem;
+            &::placeholder {
+                color: var(--text-secondary);
+            }
+        }
+    }
+}
+
+.filters{
+    display: flex;
+    gap: 15px;
+    flex-wrap: nowrap;
+    margin-bottom: 25px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    .filter-btn {
+        background: var(--card-bg);
+        border: none;
+        padding: 10px 20px;
+        border-radius: 30px;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: var(--transition);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        padding: 12px 25px;
+        font-weight: 500;
+        white-space: nowrap;
+        &:hover, &.active {
+            background: var(--accent);
+            color: var(--text);
+        }
+
+        &.active{
+            border: 1px solid var(--highlight);
+        }
+        i {
+            font-size: 0.9rem;
+        }
+    }
+    &::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--accent);
+        border-radius: 10px;
+    }
+}

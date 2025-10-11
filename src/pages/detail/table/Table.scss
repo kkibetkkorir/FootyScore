@@ -1,0 +1,39 @@
+.league-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    th, td {
+        text-align: left;
+        border-bottom: 1px solid var(--light-gray);
+        padding: 12px 15px;
+
+        @media screen and (max-width: 576px){
+            padding: 6px 7px;
+        }
+    }
+
+    th {
+        background: var(--light);
+        font-weight: 600;
+        color: var(--gray);
+        font-size: 14px;
+    }
+
+    tr{
+        @media screen and (max-width: 576px){
+            font-size: 14px;
+        }
+        &:hover {
+            background: var(--card-hover);
+        }
+        &.highlight {
+            background: rgba(58, 86, 228, 0.08) !important;
+            font-weight: 600;
+        }
+        .position {
+            font-weight: 600;
+            color: var(--gray);
+            text-align: center;
+        }
+    }
+}

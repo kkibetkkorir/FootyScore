@@ -1,0 +1,220 @@
+.bet-slip {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--secondary);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.3);
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+    z-index: 100;
+    &.visible {
+        transform: translateY(0);
+    }
+
+    @media screen and (max-width: 576px) {
+        padding: 10px;
+    }
+    .slip-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        .slip-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            .slip-count {
+                background: var(--highlight);
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.8rem;
+                font-weight: 600;
+            }
+        }
+        .close-slip {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 3px 9px;
+            &:hover{
+                background: rgba(255, 255, 255, 0.05);
+                //border: 1px solid rgba(255, 255, 255, 0.1);
+                border-radius: 50px;
+            }
+        }
+
+        @media screen and (max-width: 576px) {
+            margin-bottom: 10px;
+            .slip-title {
+                font-size: 1.2rem;
+                font-weight: 600;
+                .slip-count {
+                    width: 20px;
+                    height: 20px;
+                    font-size: 0.7rem;
+                    font-weight: 600;
+                }
+            }
+
+            .close-slip {
+                font-size: 1.2rem;
+                padding: 2px 6px;
+            }
+        }
+    }
+
+    .slip-items {
+        max-height: 200px;
+        overflow-y: auto;
+        margin-bottom: 15px;
+        padding: 0 10px;
+        &::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 10px;
+        }
+        &::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        @media screen and (max-width: 576px) {
+            max-height: 250px;
+            padding: 0 5px;
+            margin-bottom: 10px;
+        }
+
+        .slip-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            .item-details {
+                flex: 1;
+                .item-match {
+                    font-weight: 600;
+                    margin-bottom: 5px;
+                }
+
+                .item-bet {
+                    font-size: 0.9rem;
+                    color: var(--text-secondary);
+                }
+            }
+
+            .item-odds {
+                font-weight: 700;
+                margin: 0 15px;
+            }
+
+            .remove-item {
+                background: rgba(244, 63, 94, 0.1);
+                border: none;
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                color: var(--highlight);
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            @media screen and (max-width: 576px) {
+                padding: 5px 0;
+                .item-details {
+                    .item-match {
+                        font-weight: 600;
+                        margin-bottom: 4px;
+                    }
+
+                    .item-bet {
+                        font-size: 0.7rem;
+                    }
+                }
+
+                .item-odds {
+                    font-weight: 600;
+                    margin: 0 10px;
+                }
+
+                .remove-item {
+                    width: 20px;
+                    height: 20px;
+                }
+            }
+        }
+    }
+    .slip-controls {
+        display: flex;
+        gap: 15px;
+        .stake-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px 15px;
+            color: var(--text);
+            font-size: 1rem;
+            &:focus {
+                outline: none;
+                border-color: var(--accent);
+            }
+        }
+        .place-bet {
+            background: var(--success);
+            border: none;
+            padding: 0 25px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            &:hover {
+                background: #16a34a;
+            }
+
+            @media screen and (max-width: 768px) {
+                padding: 12px 0;
+            }
+        }
+        @media screen and (max-width: 576px) {
+            gap: 8px;
+        }
+    }
+    .potential-win {
+        text-align: right;
+        font-size: 0.9rem;
+        margin-top: 10px;
+        padding: 12px 0;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        color: var(--text-secondary);
+        @media screen and (max-width: 576px) {
+            padding: 6px 0;
+            margin-top: 6px;
+            gap: 6px;
+        }
+
+        .values-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            @media screen and (max-width: 576px) {
+                padding: 6px 0;
+                gap: 6px;
+            }
+        }
+    }
+}

@@ -1,0 +1,123 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;//font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+}
+
+:root {
+  --primary: rgb(4, 4, 16);//#1a1a2e;//#0c1226[;//#0f172a;
+  --secondary: rgb(7, 19, 29);//#16213e;//#1d2b50;//#1e293b;//#0c1226;
+  --accent: #0f3460; //#3a5fc5;//#0ea5e9;rgb(10, 62, 104);
+  --highlight:  #e94560;//#ff4d6d;#f43f5e;#ff3355;orange;//#1f9d4d;//
+  --text: #f1f1f1;//#ffffff;//#f1f5f9;
+  --text-secondary: #a0aec0;//#94a3b8;
+  --success: #4ade80;//#4ade80;//#22c55e;
+  --warning: #facc15;//#f59e0b;
+  --card-bg: rgba(255, 255, 255, 0.05);//rgba(30, 41, 59, 0.7);
+  --card-hover: rgba(255, 255, 255, 0.08);//rgba(30, 41, 59, 0.9);
+  --border-radius: 12px;//10px;
+  --transition: all 0.3s ease;
+  --shadow: 0 10px 20px rgba(0, 0, 0, 0.3);//two && three
+  --shadow: 0 8px 16px rgba(0, 0, 0, 0.2);//one
+}
+
+.light-mode {
+  --primary: #f5f5f7;
+  --secondary: #ffffff;
+  --text: #121212;
+  --text-secondary: #5f6368;
+  --accent: #408bc5;//#0ea5e9;//green;//
+  --border: #e0e0e0;
+  --card-bg: #ffffff;
+  --card-hover: #f0f0f0;
+}
+
+body {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: var(--text);
+  min-height: 100vh;
+  padding: 20px;
+  position: relative;//two & three
+  overflow-x: hidden;//two & three
+
+  @media screen and (max-width: 576px){
+    padding: 5px;
+  }
+  //two & three
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 10% 20%, rgba(58, 95, 197, 0.1)/*rgba(14, 165, 233, 0.1)*/ 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(255, 77, 109, 0.1)/*rgba(244, 63, 94, 0.1)*/ 0%, transparent 20%);
+    z-index: -1;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    margin-top: 100px;
+
+    @media screen and (max-width: 768px) {
+      padding: 20px 0;
+  }
+
+    .slip-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--accent);
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(14, 165, 233, 0.4);
+      z-index: 99;
+      transition: var(--transition);
+      &:hover {
+          transform: translateY(-3px) rotate(5deg);
+          box-shadow: 0 8px 20px rgba(14, 165, 233, 0.6);
+      }
+      .slip-count {
+          position: absolute;
+          top: -5px;
+          right: -5px;
+          background: var(--highlight);
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.8rem;
+          font-weight: 600;
+      }
+
+      @media screen and (max-width: 576px) {
+        &{
+          //bottom: 80px;
+          bottom: 10px;
+          right: 10px;
+          width: 50px;
+          height: 50px;
+          font-size: 1.3rem;
+          .slip-count {
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+          }
+        }
+      }
+    }
+  }
+}
