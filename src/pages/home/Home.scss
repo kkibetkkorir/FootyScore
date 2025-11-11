@@ -15,6 +15,11 @@
             padding-bottom: 6px;
         }
 
+        @media screen and (max-width: 1501px) {
+            margin: 8px 0 5px;
+            padding-bottom: 3px;
+        }
+
         h2 {
             display: flex;
             align-items: center;
@@ -41,6 +46,16 @@
                     height: 24px;
                 }
             }
+
+            @media screen and (max-width: 1501px) {
+                gap: 3px;
+                font-size: 0.7rem;
+
+                i{
+                    width: 20px;
+                    height: 20px;
+                }
+            }
         }
         .view-all {
             color: var(--highlight);
@@ -52,6 +67,15 @@
             &:hover {
                 background: rgba(255, 77, 109, 0.1);
             }
+
+            @media screen and (max-width: 1501px) {
+                &{
+                    padding: 3px 5px;
+                    border-radius: 4px;
+                    font-size: 12px;
+                }
+            }
+
         }
     }
 
@@ -65,6 +89,12 @@
             grid-template-columns: repeat(auto-fill, minmax(316px, 1fr));
         }
 
+        @media screen and (max-width: 1501px) {
+            &{
+                gap: 5px;
+            }
+        }
+
         .match-card {
             background: var(--card-bg);
             border-radius: var(--border-radius);
@@ -75,9 +105,16 @@
             overflow: hidden;
             box-shadow: var(--shadow);
             gap: 15px;
+            margin: 0;
 
             @media screen and (max-width: 576px) {
-                padding: 8px;
+                padding: 10px;
+                gap: 8px;
+            }
+
+            @media screen and (max-width: 1501px) {
+                padding: 6px;
+                gap: 5px;
             }
 
             &:hover {
@@ -105,6 +142,10 @@
                 width: 5px;
                 height: 100%;
                 background: var(--highlight);
+
+                @media screen and (max-width: 1501px) {
+                    width: 3px;
+                }
             }
 
             .match-status {
@@ -113,6 +154,11 @@
                 margin-bottom: 15px;
                 font-size: 0.9rem;
                 color: var(--text-secondary);
+
+                @media screen and (max-width: 1501px) {
+                    margin-bottom: 8px;
+                    font-size: 0.7rem;
+                }
                 .live-indicator {
                     background: var(--highlight);
                     color: white;
@@ -129,7 +175,17 @@
                 @media screen and (max-width: 576px) {
                     font-size: 0.7em;
                     .live-indicator{
-                        padding: 3px 6px;
+                        padding: 2px 4px;
+                        font-size: 0.6em;
+                    }
+
+                }
+
+                @media screen and (max-width: 1501px) {
+                    font-size: 0.7em;
+                    .live-indicator{
+                        padding: 1.5px 3px;
+                        font-size: 0.6em;
                     }
                 }
             }
@@ -140,8 +196,13 @@
                 align-items: center;
                 gap: 15px;
                 @media screen and (max-width: 576px) {
-                    gap: 8px;
+                    gap: 6px;
                 }
+
+                @media screen and (max-width: 1501px) {
+                    gap: 4px;
+                }
+
                 .team {
                     display: flex;
                     flex-direction: column;
@@ -150,7 +211,6 @@
                     .team-logo {
                         width: 60px;
                         height: 60px;
-                        background: var(--accent);
                         border-radius: 50%;
                         display: flex;
                         align-items: center;
@@ -158,13 +218,20 @@
                         margin-bottom: 10px;
                         font-size: 1.5rem;
                         /*two*/
-                        box-shadow: 0 5px 15px rgba(58, 95, 197, 0.3);
+                        //box-shadow: 0 5px 15px rgba(58, 95, 197, 0.3);
 
                         @media screen and (max-width: 576px) {
                             font-size: .8rem;
                             width: 30px;
                             height: 30px;
-                            margin-bottom: 6px;
+                            margin-bottom: 4px;
+                        }
+
+                        @media screen and (max-width: 1501px) {
+                            font-size: .7rem;
+                            width: 20px;
+                            height: 20px;
+                            margin-bottom: 4px;
                         }
                     }
                     .team-name {
@@ -175,6 +242,11 @@
                         @media screen and (max-width: 576px) {
                             font-size: .8rem;
                             font-weight: 300;
+                        }
+
+                        @media screen and (max-width: 1501px) {
+                            font-size: 0.7rem;
+                            font-weight: bolder;
                         }
                     }
                 }
@@ -204,6 +276,13 @@
                                 font-size: 1rem;
                                 font-weight: 600;
                                 margin: 3px 0;
+                            }
+                        }
+                        @media screen and (max-width: 1501px) {
+                            &{
+                                font-size: 0.7rem;
+                                font-weight: 600;
+                                margin: 2px 0;
                             }
                         }
                     }
@@ -286,6 +365,11 @@
                     padding-top: 8px;
                 }
 
+                @media screen and (max-width: 1501px) {
+                    margin-top: 4px;
+                    padding-top: 4px;
+                }
+
                 .action-btn {
                     background: rgba(255, 255, 255, 0.1);
                     border: none;
@@ -311,6 +395,13 @@
                         padding: 5px 12px;
                         i {
                             font-size: 0.6rem;
+                        }
+                    }
+
+                    @media screen and (max-width: 1501px) {
+                        padding: 2.5px 6px;
+                        i {
+                            font-size: 0.5rem;
                         }
                     }
                 }

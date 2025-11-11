@@ -40,7 +40,8 @@ function Header() {
       </div>
         {
         BETTING_FREE ? (<nav className="nav-links">
-          <NavLink to="/">Live Scores</NavLink>
+          <NavLink to="/">All</NavLink>
+          <NavLink to="/live">Live</NavLink>
           <NavLink to="/fixtures">Fixtures</NavLink>
           <NavLink to="/leagues">Leagues</NavLink>
         </nav>) :

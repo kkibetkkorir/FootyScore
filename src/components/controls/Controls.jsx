@@ -1,42 +1,34 @@
 import { useEffect, useState } from 'react';
 import { BETTING_FREE } from '../../constants'
 import './Controls.scss'
+
 const sports = ["Football", "Basketball", "Tennis", "Cricket", "Esports", "Live Betting", "Promotions"];
-const categories = [
-    {
-        label: "All Matches",
-        icon: "fa-fire"
-    },
-    {
-        label: "Favorites",
-        icon: "fa-star"
-    },
-    {
-        label: "Premier League",
-        icon: "fa-crown"
-    },
-    {
-        label: "La Liga",
-        icon: "fa-futbol"
-    },
-    {
-        label: "Bundesliga",
-        icon: "fa-shield-alt"
-    },
-    {
-        label: "Serie A",
-        icon: "fa-star"
-    }
-]
 
-
-function Controls({isLive=false}) {
-    const [currentDate, setCurrentDate] = useState(new Date());
+function Controls({isLive=false, leagues=[], selectedDate, onDateChange, selectedLeague, onLeagueChange, searchQuery, onSearchChange}) {
+    const [currentDate, setCurrentDate] = useState(selectedDate || new Date());
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [selectedSport, setSelectedSport] = useState("football");
-    const [selectedCategory, setSelectedCategory] = useState("");
-    const [search, setSearch] = useState("");
+    const [selectedCategory, setSelectedCategory] = useState(null);
 
+    // Generate categories from leagues
+    const categories = [
+        {
+            id: 'all',
+            label: "All Matches",
+            icon: "fa-fire"
+        },
+        {
+            id: 'favorites',
+            label: "Favorites",
+            icon: "fa-star"
+        },
+        ...(leagues ? leagues.map(league => ({
+            id: league.id,
+            label: league.name,
+            icon: league.icon || "fa-futbol",
+            league: league
+        })) : [])
+    ];
 
     function displayDate() {
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
@@ -57,6 +49,7 @@ function Controls({isLive=false}) {
             newDate.setDate(newDate.getDate() - 1);
         }
         setCurrentDate(newDate);
+        onDateChange && onDateChange(newDate);
     }
 
     const handleDatePicker = () => {
@@ -65,15 +58,46 @@ function Controls({isLive=false}) {
 
     const handleDateChange = (e) => {
         if (e.target.value) {
-            setCurrentDate(new Date(e.target.value));
+            const newDate = new Date(e.target.value);
+            setCurrentDate(newDate);
+            onDateChange && onDateChange(newDate);
             setShowDatePicker(false);
         }
     }
 
     const handleTodayClick = () => {
-        setCurrentDate(new Date());
+        const today = new Date();
+        setCurrentDate(today);
+        onDateChange && onDateChange(today);
         setShowDatePicker(false);
     }
+
+    const handleCategoryClick = (category) => {
+        setSelectedCategory(category);
+        if (category.id === 'all') {
+            onLeagueChange && onLeagueChange(null);
+        } else if (category.league) {
+            onLeagueChange && onLeagueChange(category.league);
+        }
+    }
+
+    const handleSearchChange = (e) => {
+        onSearchChange && onSearchChange(e.target.value);
+    }
+
+    // Sync with parent selectedDate
+    useEffect(() => {
+        if (selectedDate) {
+            setCurrentDate(selectedDate);
+        }
+    }, [selectedDate]);
+
+    // Set default category
+    useEffect(() => {
+        if (categories.length > 0 && !selectedCategory) {
+            setSelectedCategory(categories[0]);
+        }
+    }, [categories]);
 
     // Close date picker when clicking outside
     useEffect(() => {
@@ -87,17 +111,13 @@ function Controls({isLive=false}) {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [showDatePicker]);
 
-    useEffect(() => {
-        setSelectedCategory(categories[0]);
-    }, []);
-
     return (
         <div>
             {!BETTING_FREE && <div className="filters">
                 {
                     sports.map(sport => {
                         return (<button
-                            key={sports[sport]}
+                            key={sport}
                             className={`filter-btn ${sport.toLocaleLowerCase() === selectedSport ? "active" : ""}`}
                             onClick={() => setSelectedSport(sport.toLocaleLowerCase())}
                         >{sport}</button>)
@@ -162,9 +182,9 @@ function Controls({isLive=false}) {
                     {
                         categories.map(category => {
                             return (<button
-                                key={categories[category]}
-                                className={`filter-btn ${category === selectedCategory && "active"}`}
-                                onClick={() => setSelectedCategory(category)}
+                                key={category.id}
+                                className={`filter-btn ${category === selectedCategory ? "active" : ""}`}
+                                onClick={() => handleCategoryClick(category)}
                             >
                                 <i className={`fas ${category.icon}`}></i>
                                 {category.label}
@@ -177,10 +197,8 @@ function Controls({isLive=false}) {
                     <input
                         type="text"
                         placeholder="Search for teams, leagues..."
-                        value={search}
-                        onChange={(e) => {
-                            setSearch(e.target.value)
-                        }}
+                        value={searchQuery || ''}
+                        onChange={handleSearchChange}
                     />
                 </div>
             </div>

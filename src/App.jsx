@@ -8,6 +8,7 @@ import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
 import Leagues from "./pages/leagues/Leagues";
 import { useState } from "react";
 import Fixtures from "./pages/home/Fixtures";
+import LiveMatches from "./pages/home/LiveMatches";
 
 const Layout = () => {
   const [visible, setVisible] = useState(false);
@@ -43,7 +44,11 @@ const router = createBrowserRouter([
         element: <Fixtures />
       },
       {
-        path: "/single/:id",
+        path: "/live",
+        element: <LiveMatches />
+      },
+      {
+        path: "/live/:id",
         element: <Detail />
       },
       {

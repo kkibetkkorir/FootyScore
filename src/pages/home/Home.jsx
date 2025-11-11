@@ -1,393 +1,399 @@
-
 import './Home.scss'
 import Controls from '../../components/controls/Controls'
 import { Links, NavLink, useNavigate } from 'react-router-dom'
 import { BETTING_FREE, DEBUG } from '../../constants'
+import { useLiveEvents } from '../../hooks/useLiveEvents';
+import { useEffect, useState } from 'react';
+import { useScheduledEvents } from '../../hooks/useScheduledEvents';
 
 function Home() {
     const navigate = useNavigate();
-    const games = [
-        {
-            home: "Real Madrid",
-            away: "Barcelona",
-            homeOdd: "3.25",
-            drawOdd: "3.80",
-            awayOdd: "2.10",
-            matchDay: "26",
-            competition: "Premier League",
-            date: "Today",
-            time: "19:45",
-            venue: "Emirates Stadium",
-            ref: "Michael Oliver",
-            status: "playing",
-            timeElapsed: 37,
-            homeScore: 0,
-            awayScore: 1,
-            attendance: '61,234',
-        },
-        {
-            home: "Real Madrid",
-            away: "Barcelona",
-            homeOdd: "3.25",
-            drawOdd: "3.80",
-            awayOdd: "2.10",
-            matchDay: "26",
-            competition: "Premier League",
-            date: "Today",
-            time: "19:45",
-            venue: "Emirates Stadium",
-            ref: "Michael Oliver",
-            status: "paused",
-            timeElapsed: 37,
-            homeScore: 0,
-            awayScore: 1,
-            attendance: '61,234',
-        },
-        {
-            home: "Real Madrid",
-            away: "Barcelona",
-            homeOdd: "3.25",
-            drawOdd: "3.80",
-            awayOdd: "2.10",
-            matchDay: "26",
-            competition: "Premier League",
-            date: "Today",
-            time: "19:45",
-            venue: "Emirates Stadium",
-            ref: "Michael Oliver",
-            status: "finished",
-            timeElapsed: 37,
-            homeScore: 0,
-            awayScore: 1,
-            attendance: '61,234',
-        },
-    ]
 
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [selectedLeague, setSelectedLeague] = useState(null);
+    const [searchQuery, setSearchQuery] = useState("");
 
-    const upcoming = [
-        {
-            home: "Arsenal",
-            away: "Liverpool",
-            homeOdd: "2.10",
-            drawOdd: "3.20",
-            awayOdd: "2.25",
-            matchDay: "28",
-            competition: "Premier League",
-            date: "Tomorrow",
-            time: "19:45",
-            venue: "Emirates Stadium",
-            ref: "Michael Oliver"
-        },
-        {
-            home: "Real Madrid",
-            away: "Barcelona",
-            homeOdd: "3.25",
-            drawOdd: "3.80",
-            awayOdd: "2.10",
-            matchDay: "26",
-            competition: "Premier League",
-            date: "Today",
-            time: "19:45",
-            venue: "Emirates Stadium",
-            ref: "Michael Oliver",
-        },
-        {
-            home: "Real Madrid",
-            away: "Barcelona",
-            homeOdd: "3.25",
-            drawOdd: "3.80",
-            awayOdd: "2.10",
-            matchDay: "26",
-            competition: "Premier League",
-            date: "Today",
-            time: "19:45",
-            venue: "Emirates Stadium",
-            ref: "Michael Oliver"
-        },
-    ]
+    const { events, loading, error } = useLiveEvents('football', 30000);
+    const { fixtures, fixturesLoading, fixturesError } = useScheduledEvents(selectedDate.toISOString().split('T')[0]);
+    const [recent, setRecent] = useState(null);
+    const [upcoming, setUpcoming] = useState(null);
+    const [leagues, setLeagues] = useState(null);
 
-    const finishedGames = [
-        {
-            home: "Real Madrid",
-            away: "Barcelona",
-            matchDay: "26",
-            competition: "Premier League",
-            date: "Yesterday",
-            time: "19:45",
-            venue: "Emirates Stadium",
-            ref: "Michael Oliver",
-            homeScore: 0,
-            awayScore: 1,
-            attendance: '61,234',
-        },
-        {
-            home: "Real Madrid",
-            away: "Barcelona",
-            matchDay: "26",
-            competition: "Premier League",
-            date: "Yesterday",
-            time: "19:45",
-            venue: "Emirates Stadium",
-            ref: "Michael Oliver",
-            homeScore: 0,
-            awayScore: 1,
-            attendance: '61,234',
-        },
-        {
-            home: "Real Madrid",
-            away: "Barcelona",
-            matchDay: "26",
-            competition: "Premier League",
-            date: "Yesterday",
-            time: "19:45",
-            venue: "Emirates Stadium",
-            ref: "Michael Oliver",
-            homeScore: 0,
-            awayScore: 1,
-            attendance: '61,234',
-        },
-        {
-            home: "Real Madrid",
-            away: "Barcelona",
-            matchDay: "26",
-            competition: "Premier League",
-            date: "Yesterday",
-            time: "19:45",
-            venue: "Emirates Stadium",
-            ref: "Michael Oliver",
-            homeScore: 0,
-            awayScore: 1,
-            attendance: '61,234',
-        },
-        {
-            home: "Real Madrid",
-            away: "Barcelona",
-            matchDay: "26",
-            competition: "Premier League",
-            date: "Yesterday",
-            time: "19:45",
-            venue: "Emirates Stadium",
-            ref: "Michael Oliver",
-            homeScore: 0,
-            awayScore: 1,
-            attendance: '61,234',
-        },
-    ]
-    /*const returnActions = (status) => {
-        switch (status) {
-            case "pedning":
-                return (<div />)
-            case "pedning":
-                return (<div />)
-            case "pedning":
-                return (<div />)
-            case "pedning":
-                return (<div />)
+    // Helper functions
+    const formatElapsedTime = (currentPeriodStartTimestamp, isSecondHalf = false) => {
+        if (!currentPeriodStartTimestamp) return "00:00";
+
+        const baseSeconds = Math.floor((new Date().getTime() - (currentPeriodStartTimestamp * 1000)) / 1000);
+        const totalSeconds = isSecondHalf ? baseSeconds + (45 * 60) : baseSeconds;
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    };
+
+    const formatMatchDate = (timestamp) => {
+        const matchDate = new Date(timestamp * 1000);
+        const today = new Date();
+
+        if (matchDate.getDate() === today.getDate() &&
+            matchDate.getMonth() === today.getMonth() &&
+            matchDate.getFullYear() === today.getFullYear()) {
+            return "Today";
         }
-    }*/
 
-  return (
-    <div className="main-content">
-          <Controls isLive={false} />
-        {/* Live Matches Section */}
-        <div className="section-header">
-            <h2><i className="fas fa-bolt"></i> Live Matches</h2>
-            <NavLink to="/" className="view-all">View All</NavLink>
-        </div>
+        return matchDate.toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+        }).replace(/(\d+)/, (day) => {
+            const d = parseInt(day);
+            return d + (d % 10 === 1 && d !== 11 ? 'st' :
+                d % 10 === 2 && d !== 12 ? 'nd' :
+                d % 10 === 3 && d !== 13 ? 'rd' : 'th');
+        });
+    };
 
-        <div className="matches-grid">
-            {
-                games.map(game => {
-                    return (
-                        <div className="match-card live" onClick={() => navigate('/single/:id')}>
-                            <div className="match-status">
-                                <span>{game.competition} - Matchday {game.matchDay}</span>
-                                {
-                                    game.status === "finished" ? <span>Finished</span> : <div className="live-indicator">
-                                        <i className="fas fa-circle"></i> LIVE
-                                    </div>
-                                }
-                            </div>
-                            <div className="match-teams">
-                                <div className="team">
-                                    <div className="team-logo">
-                                        <i className="fas fa-lion"></i>
-                                    </div>
-                                    <div className="team-name">{game.home}</div>
-                                </div>
-                                <div className="match-score">
-                                    <div className="score"><span className={game.status !== "finished" && "live-score"}>{game.homeScore}</span> - <span className={game.status !== "finished" && "live-score"}>{game.awayScore}</span></div>
-                                    <div className="match-time">{
-                                        game.status === "finished" ? "FT" : `${game.timeElapsed}'`
-                                    }</div>
-                                </div>
-                                <div className="team">
-                                    <div className="team-logo">
-                                        <i className="fas fa-dragon"></i>
-                                    </div>
-                                    <div className="team-name">{game.away}</div>
-                                </div>
-                            </div>
-                            {
-                                BETTING_FREE ? (DEBUG ?
-                                    (<div className="match-info">
-                                        <span><i className="fas fa-stadium"></i>{game.venue}</span>
-                                        <span><i className="fas fa-user"></i>{game.attendance}</span>
-                                    </div>) :
-                                    (<div className="match-actions">
-                                        <button className="action-btn" onClick={() => navigate('/fixtures')}><i className="fas fa-chart-line"></i> Stats</button>
-                                        <button className="action-btn" onClick={() => navigate('/leagues')}><i className="fas fa-video"></i> Watch</button>
-                                        <button className="action-btn" onClick={(e) => e.preventDefault()}><i className="far fa-bell"></i> Alert</button>
-                                    </div>)) :
+    // Extract unique leagues from events and fixtures
+    useEffect(() => {
+        const allLeagues = new Map();
 
-                                (<div className="betting-options">
-                                    <div className="bet-option">
-                                        <div className="option-name">Home</div>
-                                        <div className="option-odds">{game.homeOdd}</div>
-                                    </div>
-                                    <div className="bet-option">
-                                        <div className="option-name">Draw</div>
-                                        <div className="option-odds">{game.drawOdd}</div>
-                                    </div>
-                                    <div className="bet-option">
-                                        <div className="option-name">Away</div>
-                                        <div className="option-odds">{game.awayOdd}</div>
-                                    </div>
-                                </div>)
-                            }
-                        </div>);
-                })
-            }
-        </div>
+        // Add leagues from live events
+        if (events) {
+            events.forEach(event => {
+                if (event.tournament && !allLeagues.has(event.tournament.id)) {
+                    allLeagues.set(event.tournament.id, {
+                        id: event.tournament.id,
+                        name: event.tournament.name,
+                        slug: event.tournament.slug,
+                        category: event.tournament.category,
+                        uniqueTournament: event.tournament.uniqueTournament,
+                        priority: event.tournament.priority,
+                        icon: "fa-futbol" // Default icon
+                    });
+                }
+            });
+        }
 
-        <div className="section-header">
-                <h2><i className="fas fa-calendar-alt"></i> Upcoming Matches</h2>
-                <NavLink to="/fixtures" className="view-all">View All</NavLink>
+        // Add leagues from fixtures
+        if (fixtures) {
+            fixtures.forEach(fixture => {
+                if (fixture.tournament && !allLeagues.has(fixture.tournament.id)) {
+                    allLeagues.set(fixture.tournament.id, {
+                        id: fixture.tournament.id,
+                        name: fixture.tournament.name,
+                        slug: fixture.tournament.slug,
+                        category: fixture.tournament.category,
+                        uniqueTournament: fixture.tournament.uniqueTournament,
+                        priority: fixture.tournament.priority,
+                        icon: "fa-futbol" // Default icon
+                    });
+                }
+            });
+        }
+
+        setLeagues(Array.from(allLeagues.values()));
+    }, [events, fixtures]);
+
+    // Filter fixtures based on status
+    useEffect(() => {
+        let filteredFixtures = fixtures;
+
+        // Apply league filter
+        if (selectedLeague && filteredFixtures) {
+            filteredFixtures = filteredFixtures.filter(fixture =>
+                fixture.tournament.id === selectedLeague.id
+            );
+        }
+
+        // Apply search filter
+        if (searchQuery && filteredFixtures) {
+            filteredFixtures = filteredFixtures.filter(fixture =>
+                fixture.homeTeam.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                fixture.awayTeam.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                fixture.tournament.name.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+        }
+
+        if (filteredFixtures) {
+            setUpcoming(filteredFixtures.filter(fixture =>
+                fixture.status.type === "notstarted"
+            ));
+            setRecent(filteredFixtures.filter(fixture =>
+                fixture.status.type === "finished"
+            ));
+        }
+    }, [fixtures, selectedLeague, searchQuery]);
+
+    // Filter live events based on search
+    const filteredEvents = events ? events.filter(event => {
+        if (!searchQuery) return true;
+        return (
+            event.homeTeam.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            event.awayTeam.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            event.tournament.name.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+    }) : null;
+
+    useEffect(() => {
+        events && console.log(events)
+    }, [events])
+
+    return (
+        <div className="main-content">
+            <Controls
+                isLive={true}
+                leagues={leagues}
+                selectedDate={selectedDate}
+                onDateChange={setSelectedDate}
+                selectedLeague={selectedLeague}
+                onLeagueChange={setSelectedLeague}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+            />
+
+            {/* Live Matches Section */}
+            <div className="section-header">
+                <h2><i className="fas fa-bolt"></i> Live Matches</h2>
+                <NavLink to="/live" className="view-all">View All {filteredEvents && filteredEvents.length}</NavLink>
             </div>
 
             <div className="matches-grid">
-            {
-                upcoming.map(match => {
-                    return (
-                        <div className="match-card" data-match-id="4">
-                            <div className="match-status">
-                                <span>Premier League - Matchday {match.matchDay}</span>
-                                <span>{match.date}</span>
-                            </div>
-                            <div className="match-teams">
-                                <div className="team">
-                                    <div className="team-logo">
-                                        <i className="fas fa-sun"></i>
+                {
+                    filteredEvents && filteredEvents.slice(0, 5).map(event => {
+                        return (
+                            <div className="match-card live" key={event.id} onClick={() => navigate(`/live/${event.id}`)}>
+                                <div className="match-status">
+                                    <span>{event.tournament.name} {/*- Matchday {game.matchDay}*/}</span>
+                                    {
+                                        event.status.type !== "inprogress" ? <span>Finished</span> : <div className="live-indicator">
+                                            <i className="fas fa-circle"></i> LIVE
+                                        </div>
+                                    }
+                                </div>
+                                <div className="match-teams">
+                                    <div className="team">
+                                    <img src={`https://img.sofascore.com/api/v1/team/${event.homeTeam.id}/image`} alt="" className="team-logo" style={{
+                                            //boxShadow: `0px 5px 10px${event.homeTeam.teamColors.primary}`
+                                        }} />
+                                        <div className="team-name">{event.homeTeam.name}</div>
                                     </div>
-                                    <div className="team-name">{match.home}</div>
-                                </div>
-                                <div className="match-score">
-                                    <div className="score">- : -</div>
-                                    <div className="match-time">{match.time}</div>
-                                </div>
-                                <div className="team">
-                                    <div className="team-logo">
-                                        <i className="fas fa-ship"></i>
+                                    <div className="match-score">
+                                        <div className="score">
+                                            <span className={
+                                                event.status.type === "inprogress" &&
+                                                ["Started", "1st half", "2nd half"].includes(event.status.description) ? "live-score" : ""
+                                            }>{event.homeScore.current}</span>
+                                            -
+                                            <span className={
+                                                event.status.type === "inprogress" &&
+                                                ["Started", "1st half", "2nd half"].includes(event.status.description) ? "live-score" : ""
+                                            }>{event.awayScore.current}</span>
+                                        </div>
+                                        <div className="match-time">
+                                            {event.status.type === "inprogress" ?
+                                                (event.status.description === "Halftime" ? "HT" :
+                                                 `${formatElapsedTime(event.time?.currentPeriodStartTimestamp, event.lastPeriod === "period2")}'`)
+                                                : new Date(event.startTimestamp * 1000).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})
+                                            }
+                                        </div>
                                     </div>
-                                    <div className="team-name">{match.away}</div>
+                                    <div className="team">
+                                    <img src={`https://img.sofascore.com/api/v1/team/${event.awayTeam.id}/image`} alt="" className="team-logo" style={{
+                                            //boxShadow: `0px 5px 10px${event.awayTeam.teamColors.primary}`
+                                        }} />
+                                        <div className="team-name">{event.awayTeam.name}</div>
+                                    </div>
                                 </div>
-                            </div>
-                            {
-                                BETTING_FREE ? (<div className="match-info">
-                                    <span><i className="fas fa-stadium"></i>{match.venue}</span>
-                                </div>) :
+                                {
+                                    /*BETTING_FREE ? (DEBUG ?
+                                        (<div className="match-info">
+                                            <span><i className="fas fa-stadium"></i>{game.venue}</span>
+                                            <span><i className="fas fa-user"></i>{game.attendance}</span>
+                                        </div>) :
+                                        (<div className="match-actions">
+                                            <button className="action-btn" onClick={() => navigate('/fixtures')}><i className="fas fa-chart-line"></i> Stats</button>
+                                            <button className="action-btn" onClick={() => navigate('/leagues')}><i className="fas fa-video"></i> Watch</button>
+                                            <button className="action-btn" onClick={(e) => e.preventDefault()}><i className="far fa-bell"></i> Alert</button>
+                                        </div>)) :
 
-                                (<div className="betting-options">
-                                    <div className="bet-option">
-                                        <div className="option-name">Home</div>
-                                        <div className="option-odds">{match.homeOdd}</div>
-                                    </div>
-                                    <div className="bet-option">
-                                        <div className="option-name">Draw</div>
-                                        <div className="option-odds">{match.drawOdd}</div>
-                                    </div>
-                                    <div className="bet-option">
-                                        <div className="option-name">Away</div>
-                                        <div className="option-odds">{match.awayOdd}</div>
-                                    </div>
-                                </div>)
-                            }
-                        </div>
-                    )
-                })
-            }
+                                    (<div className="betting-options">
+                                        <div className="bet-option">
+                                            <div className="option-name">Home</div>
+                                            <div className="option-odds">{game.homeOdd}</div>
+                                        </div>
+                                        <div className="bet-option">
+                                            <div className="option-name">Draw</div>
+                                            <div className="option-odds">{game.drawOdd}</div>
+                                        </div>
+                                        <div className="bet-option">
+                                            <div className="option-name">Away</div>
+                                            <div className="option-odds">{game.awayOdd}</div>
+                                        </div>
+                                    </div>)*/
+                                }
+                            </div>);
+                    })
+                }
             </div>
 
-        {/* Recent Results Section */}
-        {BETTING_FREE && <div className="section-header">
-            <h2><i className="fas fa-history"></i> Recent Results</h2>
-            <NavLink to="/" className="view-all">View All</NavLink>
-        </div>}
+            <div className="section-header">
+                <h2><i className="fas fa-calendar-alt"></i> Upcoming Matches</h2>
+                <NavLink to="/fixtures" className="view-all">View All {upcoming && upcoming.length}</NavLink>
+            </div>
 
-        {BETTING_FREE && <div className="matches-grid">
-            {
-                finishedGames.map(match => {
-                    return (
-                        <div className="match-card">
-                            <div className="match-status">
-                                <span>{match.competition} - Matchday {match.matchDay}</span>
-                                <span>{match.date}</span>
-                            </div>
-                            <div className="match-teams">
-                                <div className="team">
-                                    <div className="team-logo">
-                                        <i className="fas fa-rocket"></i>
+            <div className="matches-grid">
+                {
+                    upcoming && upcoming.slice(0, 5).map(match => {
+                        return (
+                            <div className="match-card" data-match-id="4" key={match.id}>
+                                <div className="match-status">
+                                    <span>{match.tournament.name}</span>
+                                    <span>{formatMatchDate(match.startTimestamp)}</span>
+                                </div>
+                                <div className="match-teams">
+                                    <div className="team">
+                                        <img src={`https://img.sofascore.com/api/v1/team/${match.homeTeam.id}/image`} alt="" className="team-logo" style={{
+                                            //boxShadow: `0px 5px 10px${match.homeTeam.teamColors.primary}`
+                                        }} />
+                                        <div className="team-name">{match.homeTeam.name}</div>
                                     </div>
-                                    <div className="team-name">{match.home}</div>
-                                </div>
-                                <div className="match-score">
-                                    <div className="score">{match.homeScore} - {match.awayScore}</div>
-                                    <div className="match-time">FT</div>
-                                </div>
-                                <div className="team">
-                                    <div className="team-logo">
-                                        <i className="fas fa-feather-alt"></i>
+                                    <div className="match-score">
+                                        <div className="score">-:-</div>
+                                        <div className="match-time">
+                                            {new Date(match.startTimestamp * 1000).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', hour12: false})}
+                                        </div>
                                     </div>
-                                    <div className="team-name">{match.away}</div>
+                                    <div className="team">
+                                        <img src={`https://img.sofascore.com/api/v1/team/${match.awayTeam.id}/image`} alt="" className="team-logo" style={{
+                                            //boxShadow: `0px 5px 10px${match.awayTeam.teamColors.primary}`
+                                        }} />
+                                        <div className="team-name">{match.awayTeam.name}</div>
+                                    </div>
                                 </div>
+                                {/*
+                                    BETTING_FREE ? (<div className="match-info">
+                                        <span><i className="fas fa-stadium"></i>{match.venue}</span>
+                                    </div>) :
+
+                                    (<div className="betting-options">
+                                        <div className="bet-option">
+                                            <div className="option-name">Home</div>
+                                            <div className="option-odds">{match.homeOdd}</div>
+                                        </div>
+                                        <div className="bet-option">
+                                            <div className="option-name">Draw</div>
+                                            <div className="option-odds">{match.drawOdd}</div>
+                                        </div>
+                                        <div className="bet-option">
+                                            <div className="option-name">Away</div>
+                                            <div className="option-odds">{match.awayOdd}</div>
+                                        </div>
+                                    </div>)
+                                */}
                             </div>
-                            <div className="match-actions">
-                                <button className="action-btn"><i className="fas fa-chart-line"></i> Stats</button>
-                                <button className="action-btn"><i className="fas fa-video"></i> Highlights</button>
-                                <button className="action-btn"><i className="fas fa-share-alt"></i> Share</button>
+                        )
+                    })
+                }
+            </div>
+
+            {/* Recent Results Section */}
+            {BETTING_FREE && <div className="section-header">
+                <h2><i className="fas fa-history"></i> Recent Results</h2>
+                <NavLink to="/" className="view-all">View All {recent && recent.length}</NavLink>
+            </div>}
+
+            {BETTING_FREE && <div className="matches-grid">
+                {
+                    recent && recent.slice(0, 5).map(match => {
+                        return (
+                            <div className="match-card" key={match.id}>
+                                <div className="match-status">
+                                    <span>{match.tournament.name}</span>
+                                    <span>
+                                        {(() => {
+                                            const matchDate = new Date(match.startTimestamp * 1000);
+                                            const today = new Date();
+
+                                            if (matchDate.getDate() === today.getDate() &&
+                                                matchDate.getMonth() === today.getMonth() &&
+                                                matchDate.getFullYear() === today.getFullYear()) {
+                                                return `Today, ${matchDate.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}`;
+                                            } else {
+                                                return matchDate.toLocaleDateString('en-GB', {
+                                                    day: 'numeric',
+                                                    month: 'short',
+                                                    year: 'numeric'
+                                                }).replace(/(\d+)/, (day) => {
+                                                    const d = parseInt(day);
+                                                    return d + (d % 10 === 1 && d !== 11 ? 'st' :
+                                                        d % 10 === 2 && d !== 12 ? 'nd' :
+                                                        d % 10 === 3 && d !== 13 ? 'rd' : 'th');
+                                                }) + `, ${matchDate.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}`;
+                                            }
+                                        })()}
+                                        {/*HT {match.homeScore.period1}-{match.awayScore.period1}*/}
+                                    </span>
+                                </div>
+                                <div className="match-teams">
+                                    <div className="team">
+                                    <img src={`https://img.sofascore.com/api/v1/team/${match.homeTeam.id}/image`} alt="" className="team-logo" style={{
+                                            //boxShadow: `0px 5px 10px${match.homeTeam.teamColors.primary}`
+                                        }} />
+                                        <div className="team-name">{match.homeTeam.name}</div>
+                                    </div>
+                                    <div className="match-score">
+                                        <div className="score">{match.homeScore.display} - {match.awayScore.display}</div>
+                                        <div className="match-time">
+                                            FT
+                                        </div>
+                                    </div>
+                                    <div className="team">
+                                    <img src={`https://img.sofascore.com/api/v1/team/${match.awayTeam.id}/image`} alt="" className="team-logo" style={{
+                                            //boxShadow: `0px 5px 10px${match.awayTeam.teamColors.primary}`
+                                        }} />
+                                        <div className="team-name">{match.awayTeam.name}</div>
+                                    </div>
+                                </div>
+                                {/*<div className="match-actions">
+                                    {
+                                        match.hasEventPlayerStatistics && <button className="action-btn"><i className="fas fa-chart-line"></i> Stats</button>
+                                    }
+                                    {
+                                        match.hasGlobalHighlights && <button className="action-btn"><i className="fas fa-video"></i> Highlights</button>
+                                    }
+                                    <button className="action-btn"><i className="fas fa-share-alt"></i> Share</button>
+                                </div>*/}
                             </div>
-                        </div>
-                    )
-                })
-            }
-        </div>}
+                        )
+                    })
+                }
+            </div>}
 
-        {!BETTING_FREE && <div className="section-header">
-            <h2><i className="fas fa-gift"></i> Special Offers</h2>
-            <NavLink to="/" className="view-all">View All</NavLink>
-        </div>}
+            {!BETTING_FREE && <div className="section-header">
+                <h2><i className="fas fa-gift"></i> Special Offers</h2>
+                <NavLink to="/" className="view-all">View All</NavLink>
+            </div>}
 
-        {!BETTING_FREE && <div className="promotions">
-            <div className="promo-card">
-                <h3 className="promo-title">Welcome Bonus</h3>
-                <p className="promo-desc">Get £30 in free bets when you deposit and bet £10</p>
-                <button className="promo-btn">Claim Now</button>
-            </div>
+            {!BETTING_FREE && <div className="promotions">
+                <div className="promo-card">
+                    <h3 className="promo-title">Welcome Bonus</h3>
+                    <p className="promo-desc">Get £30 in free bets when you deposit and bet £10</p>
+                    <button className="promo-btn">Claim Now</button>
+                </div>
 
-            <div className="promo-card">
-                <h3 className="promo-title">Acca Boost</h3>
-                <p className="promo-desc">Get up to 50% bonus on your accumulator wins</p>
-                <button className="promo-btn">Learn More</button>
-            </div>
+                <div className="promo-card">
+                    <h3 className="promo-title">Acca Boost</h3>
+                    <p className="promo-desc">Get up to 50% bonus on your accumulator wins</p>
+                    <button className="promo-btn">Learn More</button>
+                </div>
 
-            <div className="promo-card">
-                <h3 className="promo-title">Free Bet Club</h3>
-                <p className="promo-desc">Earn free bets every week with our loyalty program</p>
-                <button className="promo-btn">Join Now</button>
-            </div>
-        </div>}
-    </div>
-  )
+                <div className="promo-card">
+                    <h3 className="promo-title">Free Bet Club</h3>
+                    <p className="promo-desc">Earn free bets every week with our loyalty program</p>
+                    <button className="promo-btn">Join Now</button>
+                </div>
+            </div>}
+        </div>
+    )
 }
 
 export default Home

@@ -112,7 +112,7 @@ function Fixtures() {
             {
                 upcoming.map(match => {
                     return (
-                        <div className="match-card" data-match-id="4" onClick={() => navigate('/single/:id')}>
+                        <div className="match-card" data-match-id="4" onClick={() => navigate('/single/id')}>
                             <div className="match-status">
                                 <span>Premier League - Matchday {match.matchDay}</span>
                                 <span>{match.date}</span>
