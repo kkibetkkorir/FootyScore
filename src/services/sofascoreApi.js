@@ -4,19 +4,21 @@ import axios from 'axios';
 const BASE_URL = 'https://api.sofascore.com/';
 
 // Create axios instance with base configuration
+import { getRandomUserAgent } from './userAgents';
+
 const apiClient = axios.create({
-  baseURL: BASE_URL,
+  baseURL: 'https://api.sofascore.com/',
   timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-  },
 });
 
-// Request interceptor
 apiClient.interceptors.request.use(
   (config) => {
-    // Add any required headers here
+    config.headers['User-Agent'] = getRandomUserAgent();
+    config.headers['Accept'] = 'application/json';
+    config.headers['Accept-Language'] = 'en-US,en;q=0.9';
+    config.headers['Origin'] = 'https://www.sofascore.com';
+    config.headers['Referer'] = 'https://www.sofascore.com/';
+
     return config;
   },
   (error) => Promise.reject(error)
@@ -82,6 +84,14 @@ export const sofascoreApi = {
   // Pre-game form
   getPregameForm: (matchId) =>
     apiClient.get(`api/v1/event/${matchId}/pregame-form`),
+
+  //Event graph
+  getEventGraph: (matchId) =>
+    apiClient.get(`https://api.sofascore.com/api/v1/event/${matchId}/graph`),
+
+  //Match highlights
+  getMatchHighlights: (matchId) =>
+    apiClient.get(`https://api.sofascore.com/api/v1/event/${matchId}/highlights`),
 
   // ===== PLAYER ENDPOINTS =====
 
