@@ -1,43 +1,47 @@
 // services/sofascoreApi.js
 import axios from 'axios';
-import { getCachedUserAgent, getUserAgents, testAllUserAgents } from './userAgents.js';
 
-// Direct SofaScore API URL
-//const BASE_URL = 'https://api.sofascore.com/';
+// List of public CORS proxies (rotate through them)
+const CORS_PROXIES = [
+  'https://cors-anywhere.herokuapp.com/',
+  'https://api.allorigins.win/raw?url=',
+  'https://corsproxy.io/?',
+  'https://proxy.cors.sh/',
+  'https://crossorigin.me/',
+  'https://cors-proxy.htmldriven.com/?url=',
+];
 
-// Use relative paths - will work in both development and production
-const BASE_URL = '/api/';
+// Get a random proxy from the list
+const getRandomProxy = () => {
+  return CORS_PROXIES[Math.floor(Math.random() * CORS_PROXIES.length)];
+};
 
-// Create local rotation variables for this module
-let currentUserAgent = null;
-let lastRotationTime = 0;
-const ROTATION_INTERVAL = 5 * 60 * 1000; // Rotate every 5 minutes
+// SofaScore base URL
+const SOFASCORE_BASE = 'https://api.sofascore.com/';
 
-// Create axios instance with base configuration
 const apiClient = axios.create({
-  baseURL: BASE_URL,
-  timeout: 100000,
+  timeout: 15000,
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  },
 });
 
-// Request interceptor to rotate User-Agents
+// Request interceptor to add CORS proxy
 apiClient.interceptors.request.use(
   (config) => {
-    // Get a random User-Agent for each request
-    //const userAgent = getCachedUserAgent();
+    const proxy = getRandomProxy();
+    const targetUrl = SOFASCORE_BASE + config.url;
 
-    // Set headers for each request
-    /*config.headers = {
-      ...config.headers,
-      'User-Agent': userAgent,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'Accept-Language': 'en-US,en;q=0.9',
-      'Referer': 'https://www.sofascore.com/',
-      'Origin': 'https://www.sofascore.com/',
-    };
+    // Different proxies have different URL formats
+    if (proxy.includes('allorigins.win') || proxy.includes('corsproxy.io') || proxy.includes('cors-proxy.htmldriven.com')) {
+      config.url = proxy + encodeURIComponent(targetUrl);
+    } else {
+      config.url = proxy + targetUrl;
+    }
 
-    console.log(`🔧 Using User-Agent: ${userAgent.substring(0, 60)}...`)*/
-    console.log(`🌐 Making request to: ${config.url}`);
+    console.log(`🔧 Using proxy: ${proxy.substring(0, 30)}...`);
+    console.log(`🌐 Final URL: ${config.url.substring(0, 80)}...`);
 
     return config;
   },
@@ -47,26 +51,24 @@ apiClient.interceptors.request.use(
 // Response interceptor
 apiClient.interceptors.response.use(
   (response) => {
-    console.log(`✅ Success: ${response.status} ${response.config.url}`);
+    console.log(`✅ Success: ${response.status}`);
     return response;
   },
   (error) => {
-    console.error('❌ API Error:', {
+    console.error('❌ Proxy Error:', {
       message: error.message,
       status: error.response?.status,
-      url: error.config?.url,
-      userAgent: error.config?.headers?.['User-Agent']?.substring(0, 50)
+      proxy: error.config?.url?.substring(0, 50)
     });
 
-    // If we get 403, we might want to force rotate the User-Agent
-    if (error.response?.status === 403) {
-      console.log('🔄 403 detected - consider rotating User-Agent');
+    // Retry with a different proxy if this one fails
+    if (error.response?.status >= 400) {
+      console.log('🔄 Retrying with different proxy...');
     }
 
     return Promise.reject(error);
   }
 );
-
 
 // API service methods
 export const sofascoreApi = {
@@ -120,13 +122,13 @@ export const sofascoreApi = {
   getPregameForm: (matchId) =>
     apiClient.get(`api/v1/event/${matchId}/pregame-form`),
 
-  //Event graph
+  // Event graph
   getEventGraph: (matchId) =>
-    apiClient.get(`https://api.sofascore.com/api/v1/event/${matchId}/graph`),
+    apiClient.get(`api/v1/event/${matchId}/graph`),
 
-  //Match highlights
+  // Match highlights
   getMatchHighlights: (matchId) =>
-    apiClient.get(`https://api.sofascore.com/api/v1/event/${matchId}/highlights`),
+    apiClient.get(`api/v1/event/${matchId}/highlights`),
 
   // ===== PLAYER ENDPOINTS =====
 
@@ -192,46 +194,82 @@ export const sofascoreApi = {
   getCupTree: (tournamentId, seasonId) =>
     apiClient.get(`mobile/v4/unique-tournament/${tournamentId}/season/${seasonId}/cuptree`),
 
-  //https://www.sofascore.com/api/v1/unique-tournament/1/season/56953/statistics
-  //https://api.sofascore.com/api/v1/player/827606/unique-tournament/17/season/52186/statistics/overall
-  //https://www.sofascore.com/api/v1/unique-tournament/1/season/56953/statistics?limit=20&order=-rating&offset=20&accumulation=total&group=summary
+  // ===== ADDITIONAL ENDPOINTS =====
 
+  // Tournament statistics
+  getTournamentStatistics: (tournamentId, seasonId) =>
+    apiClient.get(`api/v1/unique-tournament/${tournamentId}/season/${seasonId}/statistics`),
+
+  // Player tournament statistics
+  getPlayerTournamentStats: (playerId, tournamentId, seasonId) =>
+    apiClient.get(`api/v1/player/${playerId}/unique-tournament/${tournamentId}/season/${seasonId}/statistics/overall`),
+
+  // Tournament statistics with filters
+  getTournamentStatsWithFilters: (tournamentId, seasonId, params = {}) =>
+    apiClient.get(`api/v1/unique-tournament/${tournamentId}/season/${seasonId}/statistics`, { params }),
 
   // ===== TESTING METHODS =====
 
-  // Test all User-Agents to find which ones work
-  testAllUserAgents: async () => {
-    console.log('🧪 Testing all User-Agents...');
+  // Test all proxies to find which ones work
+  testAllProxies: async () => {
+    console.log('🧪 Testing all CORS proxies...');
 
-    const testFunction = async (userAgent) => {
-      const testClient = axios.create({
-        baseURL: BASE_URL,
-        timeout: 10000,
-        headers: {
-          'User-Agent': userAgent,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      });
+    const results = [];
 
-      const response = await testClient.get(`api/v1/sport/football/events/live`);
-      return response.data;
-    };
+    for (let i = 0; i < CORS_PROXIES.length; i++) {
+      const proxy = CORS_PROXIES[i];
+      try {
+        console.log(`Testing proxy ${i + 1}/${CORS_PROXIES.length}: ${proxy.substring(0, 30)}...`);
 
-    return await testAllUserAgents(testFunction);
+        const testUrl = proxy.includes('allorigins.win') || proxy.includes('corsproxy.io') || proxy.includes('cors-proxy.htmldriven.com')
+          ? proxy + encodeURIComponent(SOFASCORE_BASE + 'api/v1/sport/football/events/live')
+          : proxy + SOFASCORE_BASE + 'api/v1/sport/football/events/live';
+
+        const response = await axios.get(testUrl, { timeout: 10000 });
+        results.push({ proxy, success: true, status: response.status });
+        console.log(`✅ Proxy ${i + 1} SUCCESS`);
+      } catch (error) {
+        results.push({
+          proxy,
+          success: false,
+          error: error.message,
+          status: error.response?.status
+        });
+        console.log(`❌ Proxy ${i + 1} FAILED: ${error.message}`);
+      }
+
+      // Small delay between tests
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
+    return results;
   },
 
-  // Get current User-Agent being used
-  getCurrentUserAgent: () => getCachedUserAgent(),
+  // Get all available proxies
+  getAllProxies: () => CORS_PROXIES,
 
-  // Get all available User-Agents
-  getAllUserAgents: () => getUserAgents(),
-
-  // Force rotate to a new User-Agent
-  rotateUserAgent: () => {
-    currentUserAgent = null;
-    lastRotationTime = 0;
-    return getCachedUserAgent();
+  // Force use specific proxy
+  useSpecificProxy: (proxyIndex) => {
+    if (proxyIndex >= 0 && proxyIndex < CORS_PROXIES.length) {
+      const specificProxy = CORS_PROXIES[proxyIndex];
+      // Override the interceptor for next request
+      apiClient.interceptors.request.clear();
+      apiClient.interceptors.request.use(
+        (config) => {
+          const targetUrl = SOFASCORE_BASE + config.url;
+          if (specificProxy.includes('allorigins.win') || specificProxy.includes('corsproxy.io') || specificProxy.includes('cors-proxy.htmldriven.com')) {
+            config.url = specificProxy + encodeURIComponent(targetUrl);
+          } else {
+            config.url = specificProxy + targetUrl;
+          }
+          console.log(`🔧 Using specific proxy: ${specificProxy.substring(0, 30)}...`);
+          return config;
+        },
+        (error) => Promise.reject(error)
+      );
+      return `Using proxy: ${specificProxy}`;
+    }
+    throw new Error('Invalid proxy index');
   }
 };
 
