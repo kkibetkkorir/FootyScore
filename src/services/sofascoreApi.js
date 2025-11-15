@@ -1,7 +1,23 @@
 // services/sofascoreApi.js
 import axios from 'axios';
 
-const BASE_URL = 'https://api.sofascore.com/';
+// Determine base URL based on environment
+const getBaseURL = () => {
+  // For development - use proxy server on localhost:3001
+  if (import.meta.env.DEV) {
+    return 'http://localhost:3001/api/proxy/';
+  }
+  // For production - use your deployed proxy
+  else {
+    return 'https://footyscore.onrender.com/api/proxy/';
+  }
+};
+
+//const BASE_URL = getBaseURL();
+// Use proxy for ALL environments to avoid CORS issues
+const BASE_URL = import.meta.env.DEV
+  ? 'http://localhost:3001/api/proxy/'
+  : '/api/proxy/'; // Relative path for production
 
 // Create axios instance with base configuration
 const apiClient = axios.create({
@@ -9,14 +25,16 @@ const apiClient = axios.create({
   timeout: 100000,
   headers: {
     'Content-Type': 'application/json',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36',//'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36',
+    'Accept': 'application/json',
+    'Accept-Language': 'en-US,en;q=0.9',
   },
 });
 
 // Request interceptor
 apiClient.interceptors.request.use(
   (config) => {
-    // Add any required headers here
+    console.log('Making API request to:', config.baseURL + config.url);
     return config;
   },
   (error) => Promise.reject(error)
@@ -26,7 +44,11 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error('API Error:', error);
+    console.error('API Error:', {
+      message: error.message,
+      url: error.config?.url,
+      baseURL: error.config?.baseURL
+    });
     return Promise.reject(error);
   }
 );
