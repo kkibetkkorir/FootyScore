@@ -1,40 +1,41 @@
 // services/sofascoreApi.js
 import axios from 'axios';
+import { getCachedUserAgent, getUserAgents, testAllUserAgents } from './userAgents.js';
 
-// Determine base URL based on environment
-const getBaseURL = () => {
-  // For development - use proxy server on localhost:3001
-  if (import.meta.env.DEV) {
-    return 'http://localhost:3001/api/proxy/';
-  }
-  // For production - use your deployed proxy
-  else {
-    return 'https://footyscore.onrender.com/api/proxy/';
-  }
-};
+// Direct SofaScore API URL
+const BASE_URL = 'https://api.sofascore.com/';
 
-//const BASE_URL = getBaseURL();
-// Use proxy for ALL environments to avoid CORS issues
-const BASE_URL = import.meta.env.DEV
-  ? 'http://localhost:3001/api/proxy/'
-  : '/api/proxy/'; // Relative path for production
+// Create local rotation variables for this module
+let currentUserAgent = null;
+let lastRotationTime = 0;
+const ROTATION_INTERVAL = 5 * 60 * 1000; // Rotate every 5 minutes
 
 // Create axios instance with base configuration
 const apiClient = axios.create({
   baseURL: BASE_URL,
   timeout: 100000,
-  headers: {
-    'Content-Type': 'application/json',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36',
-    'Accept': 'application/json',
-    'Accept-Language': 'en-US,en;q=0.9',
-  },
 });
 
-// Request interceptor
+// Request interceptor to rotate User-Agents
 apiClient.interceptors.request.use(
   (config) => {
-    console.log('Making API request to:', config.baseURL + config.url);
+    // Get a random User-Agent for each request
+    const userAgent = getCachedUserAgent();
+
+    // Set headers for each request
+    config.headers = {
+      ...config.headers,
+      'User-Agent': userAgent,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Referer': 'https://www.sofascore.com/',
+      'Origin': 'https://www.sofascore.com/',
+    };
+
+    console.log(`🔧 Using User-Agent: ${userAgent.substring(0, 60)}...`);
+    console.log(`🌐 Making request to: ${config.url}`);
+
     return config;
   },
   (error) => Promise.reject(error)
@@ -42,13 +43,23 @@ apiClient.interceptors.request.use(
 
 // Response interceptor
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log(`✅ Success: ${response.status} ${response.config.url}`);
+    return response;
+  },
   (error) => {
-    console.error('API Error:', {
+    console.error('❌ API Error:', {
       message: error.message,
+      status: error.response?.status,
       url: error.config?.url,
-      baseURL: error.config?.baseURL
+      userAgent: error.config?.headers?.['User-Agent']?.substring(0, 50)
     });
+
+    // If we get 403, we might want to force rotate the User-Agent
+    if (error.response?.status === 403) {
+      console.log('🔄 403 detected - consider rotating User-Agent');
+    }
+
     return Promise.reject(error);
   }
 );
@@ -181,6 +192,44 @@ export const sofascoreApi = {
   //https://www.sofascore.com/api/v1/unique-tournament/1/season/56953/statistics
   //https://api.sofascore.com/api/v1/player/827606/unique-tournament/17/season/52186/statistics/overall
   //https://www.sofascore.com/api/v1/unique-tournament/1/season/56953/statistics?limit=20&order=-rating&offset=20&accumulation=total&group=summary
+
+
+  // ===== TESTING METHODS =====
+
+  // Test all User-Agents to find which ones work
+  testAllUserAgents: async () => {
+    console.log('🧪 Testing all User-Agents...');
+
+    const testFunction = async (userAgent) => {
+      const testClient = axios.create({
+        baseURL: BASE_URL,
+        timeout: 10000,
+        headers: {
+          'User-Agent': userAgent,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      });
+
+      const response = await testClient.get(`api/v1/sport/football/events/live`);
+      return response.data;
+    };
+
+    return await testAllUserAgents(testFunction);
+  },
+
+  // Get current User-Agent being used
+  getCurrentUserAgent: () => getCachedUserAgent(),
+
+  // Get all available User-Agents
+  getAllUserAgents: () => getUserAgents(),
+
+  // Force rotate to a new User-Agent
+  rotateUserAgent: () => {
+    currentUserAgent = null;
+    lastRotationTime = 0;
+    return getCachedUserAgent();
+  }
 };
 
 export default sofascoreApi;

@@ -5,6 +5,7 @@ import { BETTING_FREE } from '../../constants'
 import { useLiveEvents } from '../../hooks/useLiveEvents';
 import { useEffect, useState } from 'react';
 import { useScheduledEvents } from '../../hooks/useScheduledEvents';
+import sofascoreApi from '../../services/sofascoreApi';
 
 function Home() {
     const navigate = useNavigate();
@@ -89,6 +90,14 @@ function Home() {
                 }
             });
         }
+
+        const getResults = async() => {
+            const results = await sofascoreApi.testAllUserAgents();
+            const workingAgents = results.filter(r => r.success);
+            console.log('Working User-Agents:', workingAgents);
+        }
+
+        getResults();
 
         setLeagues(Array.from(allLeagues.values()));
     }, [events, fixtures]);
