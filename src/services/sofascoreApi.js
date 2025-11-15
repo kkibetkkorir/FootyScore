@@ -3,7 +3,10 @@ import axios from 'axios';
 import { getCachedUserAgent, getUserAgents, testAllUserAgents } from './userAgents.js';
 
 // Direct SofaScore API URL
-const BASE_URL = 'https://api.sofascore.com/';
+//const BASE_URL = 'https://api.sofascore.com/';
+
+// Use relative paths - will work in both development and production
+const BASE_URL = '/api/';
 
 // Create local rotation variables for this module
 let currentUserAgent = null;
@@ -20,10 +23,10 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     // Get a random User-Agent for each request
-    const userAgent = getCachedUserAgent();
+    //const userAgent = getCachedUserAgent();
 
     // Set headers for each request
-    config.headers = {
+    /*config.headers = {
       ...config.headers,
       'User-Agent': userAgent,
       'Content-Type': 'application/json',
@@ -33,7 +36,7 @@ apiClient.interceptors.request.use(
       'Origin': 'https://www.sofascore.com/',
     };
 
-    console.log(`🔧 Using User-Agent: ${userAgent.substring(0, 60)}...`);
+    console.log(`🔧 Using User-Agent: ${userAgent.substring(0, 60)}...`)*/
     console.log(`🌐 Making request to: ${config.url}`);
 
     return config;
