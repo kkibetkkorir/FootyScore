@@ -1,10 +1,48 @@
-import React from 'react'
 import './Table.scss'
+import { useStandings } from '../../../hooks/useStandings'
 
-function Table() {
-  return (
-    <div className="tab-content active" id="table">
-            <h2>Premier League Table</h2>
+function Table({ match }) {
+
+    // Use the standings hook
+    const { standings, loading: standingsLoading, error, refetch } = useStandings(match?.event?.tournament?.uniqueTournament?.id, match?.event?.season?.id)
+    // Show error state
+    if (error) {
+        return (
+            <div className="tab-content active" id="table">
+                <h2>League Table</h2>
+                <div className="error">
+                    Error loading standings: {error}
+                    <button onClick={refetch} className="retry-btn">Retry</button>
+                </div>
+            </div>
+        )
+    }
+
+    // Helper function to determine row highlighting
+    /*const getRowClassName = (position, promotion) => {
+        if (!position) return ''
+
+        const pos = parseInt(position)
+
+        // Champions League spots (usually top 4)
+        if (pos <= 4) return 'champions-league'
+
+        // Europa League spots (usually 5-6)
+        if (pos === 5 || pos === 6) return 'europa-league'
+
+        // Relegation zone (usually bottom 3)
+        if (pos >= 18) return 'relegation'
+
+        // Check promotion object for special highlighting
+        if (promotion?.name === 'Champions League') return 'champions-league'
+        if (promotion?.name === 'UEFA Europa League') return 'europa-league'
+
+        return ''
+    }*/
+
+    return (
+        <div className="tab-content active" id="table">
+            <h2>{ match?.event?.tournament?.name || 'League'} Table</h2>
             <table className="league-table">
                 <thead>
                     <tr>
@@ -18,71 +56,53 @@ function Table() {
                         <th>Pts</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td className="position">1</td>
-                        <td>Manchester City</td>
-                        <td>23</td>
-                        <td>16</td>
-                        <td>3</td>
-                        <td>4</td>
-                        <td>+35</td>
-                        <td>51</td>
-                    </tr>
-                    <tr>
-                        <td className="position">2</td>
-                        <td>Liverpool</td>
-                        <td>23</td>
-                        <td>15</td>
-                        <td>6</td>
-                        <td>2</td>
-                        <td>+32</td>
-                        <td>51</td>
-                    </tr>
-                    <tr className="highlight">
-                        <td className="position">3</td>
-                        <td>Arsenal</td>
-                        <td>23</td>
-                        <td>15</td>
-                        <td>4</td>
-                        <td>4</td>
-                        <td>+24</td>
-                        <td>49</td>
-                    </tr>
-                    <tr>
-                        <td className="position">4</td>
-                        <td>Aston Villa</td>
-                        <td>23</td>
-                        <td>14</td>
-                        <td>4</td>
-                        <td>5</td>
-                        <td>+19</td>
-                        <td>46</td>
-                    </tr>
-                    <tr>
-                        <td className="position">5</td>
-                        <td>Tottenham</td>
-                        <td>23</td>
-                        <td>13</td>
-                        <td>5</td>
-                        <td>5</td>
-                        <td>+14</td>
-                        <td>44</td>
-                    </tr>
-                    <tr className="highlight">
-                        <td className="position">6</td>
-                        <td>Manchester United</td>
-                        <td>23</td>
-                        <td>12</td>
-                        <td>2</td>
-                        <td>9</td>
-                        <td>-3</td>
-                        <td>38</td>
-                    </tr>
-                </tbody>
+                {<tbody>
+                    {standings && standings[0]?.tableRows?.map((row, index) => (
+                        <tr
+                            key={row.id || index}
+                        >
+                            <td className="position">{row.position}</td>
+                            <td className="team-cell">
+                                <img
+                                    src={`https://img.sofascore.com/api/v1/team/${row.team.id}/image`}
+                                    alt={row.team.name}
+                                    className="team-logo-small"
+                                    onError={(e) => {
+                                        e.target.style.display = 'none'
+                                    }}
+                                />
+                                <span className="team-name">{row.team.name}</span>
+                            </td>
+                            <td>{row.totalFields?.matchesTotal || '-'}</td>
+                            <td>{row.totalFields?.winsTotal || '-'}</td>
+                            <td>{row.totalFields?.drawsTotal || '-'}</td>
+                            <td>{row.totalFields?.lossesTotal || '-'}</td>
+                            <td>{row.totalFields?.scoreDiffFormattedTotal || '-'}</td>
+                            <td className="points">
+                                <strong>{row.totalFields?.pointsTotal || '-'}</strong>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>}
             </table>
+
+            {/* Legend for table highlights */}
+            <div className="table-legend">
+                <div className="legend-item">
+                    <span className="legend-color champions-league"></span>
+                    <span>Champions League</span>
+                </div>
+                <div className="legend-item">
+                    <span className="legend-color europa-league"></span>
+                    <span>Europa League</span>
+                </div>
+                <div className="legend-item">
+                    <span className="legend-color relegation"></span>
+                    <span>Relegation</span>
+                </div>
+            </div>
         </div>
-  )
+    )
 }
 
-export default Table
+export default Table;

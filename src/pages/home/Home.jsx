@@ -1,7 +1,7 @@
 import './Home.scss'
 import Controls from '../../components/controls/Controls'
-import { Links, NavLink, useNavigate } from 'react-router-dom'
-import { BETTING_FREE, DEBUG } from '../../constants'
+import { NavLink, useNavigate } from 'react-router-dom'
+import { BETTING_FREE } from '../../constants'
 import { useLiveEvents } from '../../hooks/useLiveEvents';
 import { useEffect, useState } from 'react';
 import { useScheduledEvents } from '../../hooks/useScheduledEvents';
@@ -67,7 +67,7 @@ function Home() {
                         category: event.tournament.category,
                         uniqueTournament: event.tournament.uniqueTournament,
                         priority: event.tournament.priority,
-                        icon: "fa-futbol" // Default icon
+                        icon: "fa-futbol"
                     });
                 }
             });
@@ -84,7 +84,7 @@ function Home() {
                         category: fixture.tournament.category,
                         uniqueTournament: fixture.tournament.uniqueTournament,
                         priority: fixture.tournament.priority,
-                        icon: "fa-futbol" // Default icon
+                        icon: "fa-futbol"
                     });
                 }
             });
@@ -93,7 +93,7 @@ function Home() {
         setLeagues(Array.from(allLeagues.values()));
     }, [events, fixtures]);
 
-    // Filter fixtures based on status
+    // Filter fixtures based on status, league, and search
     useEffect(() => {
         let filteredFixtures = fixtures;
 
@@ -123,19 +123,24 @@ function Home() {
         }
     }, [fixtures, selectedLeague, searchQuery]);
 
-    // Filter live events based on search
+    // Filter live events based on league and search
     const filteredEvents = events ? events.filter(event => {
-        if (!searchQuery) return true;
-        return (
-            event.homeTeam.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            event.awayTeam.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            event.tournament.name.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-    }) : null;
+        // Apply league filter
+        if (selectedLeague && event.tournament.id !== selectedLeague.id) {
+            return false;
+        }
 
-    useEffect(() => {
-        events && console.log(events)
-    }, [events])
+        // Apply search filter
+        if (searchQuery) {
+            return (
+                event.homeTeam.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                event.awayTeam.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                event.tournament.name.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+        }
+
+        return true;
+    }) : null;
 
     return (
         <div className="main-content">
@@ -157,52 +162,60 @@ function Home() {
             </div>
 
             <div className="matches-grid">
-                {
-                    filteredEvents && filteredEvents.slice(0, 5).map(event => {
-                        return (
-                            <div className="match-card live" key={event.id} onClick={() => navigate(`/live/${event.id}`)}>
-                                <div className="match-status">
-                                    <span>{event.tournament.name} {/*- Matchday {game.matchDay}*/}</span>
-                                    {
-                                        event.status.type !== "inprogress" ? <span>Finished</span> : <div className="live-indicator">
-                                            <i className="fas fa-circle"></i> LIVE
-                                        </div>
-                                    }
+                {filteredEvents && filteredEvents.length > 0 ? (
+                    filteredEvents.slice(0, 5).map(event => (
+                        <div className="match-card live" key={event.id} onClick={() => navigate(`/live/${event.id}`)}>
+                            <div className="match-status">
+                                <span>{event.tournament.name}</span>
+                                {event.status.type !== "inprogress" ?
+                                    <span>Finished</span> :
+                                    <div className="live-indicator">
+                                        <i className="fas fa-circle"></i> LIVE
+                                    </div>
+                                }
+                            </div>
+                            <div className="match-teams">
+                                <div className="team">
+                                    <img
+                                        src={`https://img.sofascore.com/api/v1/team/${event.homeTeam.id}/image`}
+                                        alt=""
+                                        className="team-logo"
+                                    />
+                                    <div className="team-name">{event.homeTeam.name}</div>
                                 </div>
-                                <div className="match-teams">
-                                    <div className="team">
-                                    <img src={`https://img.sofascore.com/api/v1/team/${event.homeTeam.id}/image`} alt="" className="team-logo" style={{
-                                            //boxShadow: `0px 5px 10px${event.homeTeam.teamColors.primary}`
-                                        }} />
-                                        <div className="team-name">{event.homeTeam.name}</div>
+                                <div className="match-score">
+                                    <div className="score">
+                                        <span className={
+                                            event.status.type === "inprogress" &&
+                                            ["Started", "1st half", "2nd half"].includes(event.status.description) ? "live-score" : ""
+                                        }>
+                                            {event.homeScore.current}
+                                        </span>
+                                        -
+                                        <span className={
+                                            event.status.type === "inprogress" &&
+                                            ["Started", "1st half", "2nd half"].includes(event.status.description) ? "live-score" : ""
+                                        }>
+                                            {event.awayScore.current}
+                                        </span>
                                     </div>
-                                    <div className="match-score">
-                                        <div className="score">
-                                            <span className={
-                                                event.status.type === "inprogress" &&
-                                                ["Started", "1st half", "2nd half"].includes(event.status.description) ? "live-score" : ""
-                                            }>{event.homeScore.current}</span>
-                                            -
-                                            <span className={
-                                                event.status.type === "inprogress" &&
-                                                ["Started", "1st half", "2nd half"].includes(event.status.description) ? "live-score" : ""
-                                            }>{event.awayScore.current}</span>
-                                        </div>
-                                        <div className="match-time">
-                                            {event.status.type === "inprogress" ?
-                                                (event.status.description === "Halftime" ? "HT" :
-                                                 `${formatElapsedTime(event.time?.currentPeriodStartTimestamp, event.lastPeriod === "period2")}'`)
-                                                : new Date(event.startTimestamp * 1000).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})
-                                            }
-                                        </div>
-                                    </div>
-                                    <div className="team">
-                                    <img src={`https://img.sofascore.com/api/v1/team/${event.awayTeam.id}/image`} alt="" className="team-logo" style={{
-                                            //boxShadow: `0px 5px 10px${event.awayTeam.teamColors.primary}`
-                                        }} />
-                                        <div className="team-name">{event.awayTeam.name}</div>
+                                    <div className="match-time">
+                                        {event.status.type === "inprogress" ?
+                                            (event.status.description === "Halftime" ? "HT" :
+                                            `${formatElapsedTime(event.time?.currentPeriodStartTimestamp, event.lastPeriod === "period2")}'`)
+                                            : new Date(event.startTimestamp * 1000).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})
+                                        }
                                     </div>
                                 </div>
+                                <div className="team">
+                                    <img
+                                        src={`https://img.sofascore.com/api/v1/team/${event.awayTeam.id}/image`}
+                                        alt=""
+                                        className="team-logo"
+                                    />
+                                    <div className="team-name">{event.awayTeam.name}</div>
+                                </div>
+                            </div>
                                 {
                                     /*BETTING_FREE ? (DEBUG ?
                                         (<div className="match-info">
@@ -213,26 +226,28 @@ function Home() {
                                             <button className="action-btn" onClick={() => navigate('/fixtures')}><i className="fas fa-chart-line"></i> Stats</button>
                                             <button className="action-btn" onClick={() => navigate('/leagues')}><i className="fas fa-video"></i> Watch</button>
                                             <button className="action-btn" onClick={(e) => e.preventDefault()}><i className="far fa-bell"></i> Alert</button>
-                                        </div>)) :
+                                        </div>)) :*/
 
-                                    (<div className="betting-options">
+                                    !BETTING_FREE && (<div className="betting-options">
                                         <div className="bet-option">
                                             <div className="option-name">Home</div>
-                                            <div className="option-odds">{game.homeOdd}</div>
+                                            <div className="option-odds">1.84</div>
                                         </div>
                                         <div className="bet-option">
                                             <div className="option-name">Draw</div>
-                                            <div className="option-odds">{game.drawOdd}</div>
+                                            <div className="option-odds">3.14</div>
                                         </div>
                                         <div className="bet-option">
                                             <div className="option-name">Away</div>
-                                            <div className="option-odds">{game.awayOdd}</div>
+                                            <div className="option-odds">2.83</div>
                                         </div>
-                                    </div>)*/
+                                    </div>)
                                 }
-                            </div>);
-                    })
-                }
+                        </div>
+                    ))
+                ) : (
+                    <div className="no-matches">No live matches found</div>
+                )}
             </div>
 
             <div className="section-header">
@@ -241,119 +256,124 @@ function Home() {
             </div>
 
             <div className="matches-grid">
-                {
-                    upcoming && upcoming.slice(0, 5).map(match => {
-                        return (
-                            <div className="match-card" data-match-id="4" key={match.id}>
-                                <div className="match-status">
-                                    <span>{match.tournament.name}</span>
-                                    <span>{formatMatchDate(match.startTimestamp)}</span>
+                {upcoming && upcoming.length > 0 ? (
+                    upcoming.slice(0, 5).map(match => (
+                        <div className="match-card" key={match.id}>
+                            <div className="match-status">
+                                <span>{match.tournament.name}</span>
+                                <span>{formatMatchDate(match.startTimestamp)}</span>
+                            </div>
+                            <div className="match-teams">
+                                <div className="team">
+                                    <img
+                                        src={`https://img.sofascore.com/api/v1/team/${match.homeTeam.id}/image`}
+                                        alt=""
+                                        className="team-logo"
+                                    />
+                                    <div className="team-name">{match.homeTeam.name}</div>
                                 </div>
-                                <div className="match-teams">
-                                    <div className="team">
-                                        <img src={`https://img.sofascore.com/api/v1/team/${match.homeTeam.id}/image`} alt="" className="team-logo" style={{
-                                            //boxShadow: `0px 5px 10px${match.homeTeam.teamColors.primary}`
-                                        }} />
-                                        <div className="team-name">{match.homeTeam.name}</div>
-                                    </div>
-                                    <div className="match-score">
-                                        <div className="score">-:-</div>
-                                        <div className="match-time">
-                                            {new Date(match.startTimestamp * 1000).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', hour12: false})}
-                                        </div>
-                                    </div>
-                                    <div className="team">
-                                        <img src={`https://img.sofascore.com/api/v1/team/${match.awayTeam.id}/image`} alt="" className="team-logo" style={{
-                                            //boxShadow: `0px 5px 10px${match.awayTeam.teamColors.primary}`
-                                        }} />
-                                        <div className="team-name">{match.awayTeam.name}</div>
+                                <div className="match-score">
+                                    <div className="score">-:-</div>
+                                    <div className="match-time">
+                                        {new Date(match.startTimestamp * 1000).toLocaleTimeString([], {hour: '2-digit', minute: '2-digit', hour12: false})}
                                     </div>
                                 </div>
-                                {/*
-                                    BETTING_FREE ? (<div className="match-info">
-                                        <span><i className="fas fa-stadium"></i>{match.venue}</span>
-                                    </div>) :
-
-                                    (<div className="betting-options">
+                                <div className="team">
+                                    <img
+                                        src={`https://img.sofascore.com/api/v1/team/${match.awayTeam.id}/image`}
+                                        alt=""
+                                        className="team-logo"
+                                    />
+                                    <div className="team-name">{match.awayTeam.name}</div>
+                                </div>
+                            </div>
+                            {
+                                /*BETTING_FREE ? (<div className="match-info">
+                                    <span><i className="fas fa-stadium"></i>{match.venue}</span>
+                                </div>) :*/
+                                    !BETTING_FREE && (<div className="betting-options">
                                         <div className="bet-option">
                                             <div className="option-name">Home</div>
-                                            <div className="option-odds">{match.homeOdd}</div>
+                                            <div className="option-odds">1.84</div>
                                         </div>
                                         <div className="bet-option">
                                             <div className="option-name">Draw</div>
-                                            <div className="option-odds">{match.drawOdd}</div>
+                                            <div className="option-odds">3.14</div>
                                         </div>
                                         <div className="bet-option">
                                             <div className="option-name">Away</div>
-                                            <div className="option-odds">{match.awayOdd}</div>
+                                            <div className="option-odds">2.83</div>
                                         </div>
                                     </div>)
-                                */}
-                            </div>
-                        )
-                    })
-                }
+                            }
+                        </div>
+                    ))
+                ) : (
+                    <div className="no-matches">No upcoming matches found</div>
+                )}
             </div>
 
             {/* Recent Results Section */}
-            {BETTING_FREE && <div className="section-header">
-                <h2><i className="fas fa-history"></i> Recent Results</h2>
-                <NavLink to="/" className="view-all">View All {recent && recent.length}</NavLink>
-            </div>}
+            {BETTING_FREE && (
+                <>
+                    <div className="section-header">
+                        <h2><i className="fas fa-history"></i> Recent Results</h2>
+                        <NavLink to="/" className="view-all">View All {recent && recent.length}</NavLink>
+                    </div>
 
-            {BETTING_FREE && <div className="matches-grid">
-                {
-                    recent && recent.slice(0, 5).map(match => {
-                        return (
-                            <div className="match-card" key={match.id}>
-                                <div className="match-status">
-                                    <span>{match.tournament.name}</span>
-                                    <span>
-                                        {(() => {
-                                            const matchDate = new Date(match.startTimestamp * 1000);
-                                            const today = new Date();
+                    <div className="matches-grid">
+                        {recent && recent.length > 0 ? (
+                            recent.slice(0, 5).map(match => (
+                                <div className="match-card" key={match.id} onClick={() => navigate(`/live/${match.id}`)}>
+                                    <div className="match-status">
+                                        <span>{match.tournament.name}</span>
+                                        <span>
+                                            {(() => {
+                                                const matchDate = new Date(match.startTimestamp * 1000);
+                                                const today = new Date();
 
-                                            if (matchDate.getDate() === today.getDate() &&
-                                                matchDate.getMonth() === today.getMonth() &&
-                                                matchDate.getFullYear() === today.getFullYear()) {
-                                                return `Today, ${matchDate.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}`;
-                                            } else {
-                                                return matchDate.toLocaleDateString('en-GB', {
-                                                    day: 'numeric',
-                                                    month: 'short',
-                                                    year: 'numeric'
-                                                }).replace(/(\d+)/, (day) => {
-                                                    const d = parseInt(day);
-                                                    return d + (d % 10 === 1 && d !== 11 ? 'st' :
-                                                        d % 10 === 2 && d !== 12 ? 'nd' :
-                                                        d % 10 === 3 && d !== 13 ? 'rd' : 'th');
-                                                }) + `, ${matchDate.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}`;
-                                            }
-                                        })()}
-                                        {/*HT {match.homeScore.period1}-{match.awayScore.period1}*/}
-                                    </span>
-                                </div>
-                                <div className="match-teams">
-                                    <div className="team">
-                                    <img src={`https://img.sofascore.com/api/v1/team/${match.homeTeam.id}/image`} alt="" className="team-logo" style={{
-                                            //boxShadow: `0px 5px 10px${match.homeTeam.teamColors.primary}`
-                                        }} />
-                                        <div className="team-name">{match.homeTeam.name}</div>
+                                                if (matchDate.getDate() === today.getDate() &&
+                                                    matchDate.getMonth() === today.getMonth() &&
+                                                    matchDate.getFullYear() === today.getFullYear()) {
+                                                    return `Today, ${matchDate.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}`;
+                                                } else {
+                                                    return matchDate.toLocaleDateString('en-GB', {
+                                                        day: 'numeric',
+                                                        month: 'short',
+                                                        year: 'numeric'
+                                                    }).replace(/(\d+)/, (day) => {
+                                                        const d = parseInt(day);
+                                                        return d + (d % 10 === 1 && d !== 11 ? 'st' :
+                                                            d % 10 === 2 && d !== 12 ? 'nd' :
+                                                            d % 10 === 3 && d !== 13 ? 'rd' : 'th');
+                                                    }) + `, ${matchDate.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}`;
+                                                }
+                                            })()}
+                                        </span>
                                     </div>
-                                    <div className="match-score">
-                                        <div className="score">{match.homeScore.display} - {match.awayScore.display}</div>
-                                        <div className="match-time">
-                                            FT
+                                    <div className="match-teams">
+                                        <div className="team">
+                                            <img
+                                                src={`https://img.sofascore.com/api/v1/team/${match.homeTeam.id}/image`}
+                                                alt=""
+                                                className="team-logo"
+                                            />
+                                            <div className="team-name">{match.homeTeam.name}</div>
+                                        </div>
+                                        <div className="match-score">
+                                            <div className="score">{match.homeScore.display} - {match.awayScore.display}</div>
+                                            <div className="match-time">FT</div>
+                                        </div>
+                                        <div className="team">
+                                            <img
+                                                src={`https://img.sofascore.com/api/v1/team/${match.awayTeam.id}/image`}
+                                                alt=""
+                                                className="team-logo"
+                                            />
+                                            <div className="team-name">{match.awayTeam.name}</div>
                                         </div>
                                     </div>
-                                    <div className="team">
-                                    <img src={`https://img.sofascore.com/api/v1/team/${match.awayTeam.id}/image`} alt="" className="team-logo" style={{
-                                            //boxShadow: `0px 5px 10px${match.awayTeam.teamColors.primary}`
-                                        }} />
-                                        <div className="team-name">{match.awayTeam.name}</div>
-                                    </div>
-                                </div>
-                                {/*<div className="match-actions">
+                                    {/*<div className="match-actions">
                                     {
                                         match.hasEventPlayerStatistics && <button className="action-btn"><i className="fas fa-chart-line"></i> Stats</button>
                                     }
@@ -361,39 +381,46 @@ function Home() {
                                         match.hasGlobalHighlights && <button className="action-btn"><i className="fas fa-video"></i> Highlights</button>
                                     }
                                     <button className="action-btn"><i className="fas fa-share-alt"></i> Share</button>
-                                </div>*/}
-                            </div>
-                        )
-                    })
-                }
-            </div>}
+                                    </div>*/}
+                                </div>
+                            ))
+                        ) : (
+                            <div className="no-matches">No recent matches found</div>
+                        )}
+                    </div>
+                </>
+            )}
 
-            {!BETTING_FREE && <div className="section-header">
-                <h2><i className="fas fa-gift"></i> Special Offers</h2>
-                <NavLink to="/" className="view-all">View All</NavLink>
-            </div>}
+            {!BETTING_FREE && (
+                <>
+                    <div className="section-header">
+                        <h2><i className="fas fa-gift"></i> Special Offers</h2>
+                        <NavLink to="/" className="view-all">View All</NavLink>
+                    </div>
 
-            {!BETTING_FREE && <div className="promotions">
-                <div className="promo-card">
-                    <h3 className="promo-title">Welcome Bonus</h3>
-                    <p className="promo-desc">Get £30 in free bets when you deposit and bet £10</p>
-                    <button className="promo-btn">Claim Now</button>
-                </div>
+                    <div className="promotions">
+                        <div className="promo-card">
+                            <h3 className="promo-title">Welcome Bonus</h3>
+                            <p className="promo-desc">Get £30 in free bets when you deposit and bet £10</p>
+                            <button className="promo-btn">Claim Now</button>
+                        </div>
 
-                <div className="promo-card">
-                    <h3 className="promo-title">Acca Boost</h3>
-                    <p className="promo-desc">Get up to 50% bonus on your accumulator wins</p>
-                    <button className="promo-btn">Learn More</button>
-                </div>
+                        <div className="promo-card">
+                            <h3 className="promo-title">Acca Boost</h3>
+                            <p className="promo-desc">Get up to 50% bonus on your accumulator wins</p>
+                            <button className="promo-btn">Learn More</button>
+                        </div>
 
-                <div className="promo-card">
-                    <h3 className="promo-title">Free Bet Club</h3>
-                    <p className="promo-desc">Earn free bets every week with our loyalty program</p>
-                    <button className="promo-btn">Join Now</button>
-                </div>
-            </div>}
+                        <div className="promo-card">
+                            <h3 className="promo-title">Free Bet Club</h3>
+                            <p className="promo-desc">Earn free bets every week with our loyalty program</p>
+                            <button className="promo-btn">Join Now</button>
+                        </div>
+                    </div>
+                </>
+            )}
         </div>
     )
 }
 
-export default Home
+export default Home;

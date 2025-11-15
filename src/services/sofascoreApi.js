@@ -4,21 +4,19 @@ import axios from 'axios';
 const BASE_URL = 'https://api.sofascore.com/';
 
 // Create axios instance with base configuration
-import { getRandomUserAgent } from './userAgents';
-
 const apiClient = axios.create({
-  baseURL: 'https://api.sofascore.com/',
-  timeout: 10000,
+  baseURL: BASE_URL,
+  timeout: 100000,
+  headers: {
+    'Content-Type': 'application/json',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36',//'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+  },
 });
 
+// Request interceptor
 apiClient.interceptors.request.use(
   (config) => {
-    config.headers['User-Agent'] = getRandomUserAgent();
-    config.headers['Accept'] = 'application/json';
-    config.headers['Accept-Language'] = 'en-US,en;q=0.9';
-    config.headers['Origin'] = 'https://www.sofascore.com';
-    config.headers['Referer'] = 'https://www.sofascore.com/';
-
+    // Add any required headers here
     return config;
   },
   (error) => Promise.reject(error)
@@ -32,6 +30,7 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
 
 // API service methods
 export const sofascoreApi = {
@@ -156,6 +155,10 @@ export const sofascoreApi = {
   // Cup tree
   getCupTree: (tournamentId, seasonId) =>
     apiClient.get(`mobile/v4/unique-tournament/${tournamentId}/season/${seasonId}/cuptree`),
+
+  //https://www.sofascore.com/api/v1/unique-tournament/1/season/56953/statistics
+  //https://api.sofascore.com/api/v1/player/827606/unique-tournament/17/season/52186/statistics/overall
+  //https://www.sofascore.com/api/v1/unique-tournament/1/season/56953/statistics?limit=20&order=-rating&offset=20&accumulation=total&group=summary
 };
 
 export default sofascoreApi;

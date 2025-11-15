@@ -8,7 +8,7 @@ function Controls({isLive=false, leagues=[], selectedDate, onDateChange, selecte
     const [currentDate, setCurrentDate] = useState(selectedDate || new Date());
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [selectedSport, setSelectedSport] = useState("football");
-    const [selectedCategory, setSelectedCategory] = useState(null);
+    const [selectedCategory, setSelectedCategory] = useState('all');
 
     // Generate categories from leagues
     const categories = [
@@ -25,7 +25,7 @@ function Controls({isLive=false, leagues=[], selectedDate, onDateChange, selecte
         ...(leagues ? leagues.map(league => ({
             id: league.id,
             label: league.name,
-            icon: league.icon || "fa-futbol",
+            icon: league.uniqueTournament ? league.uniqueTournament.id : league.id,//
             league: league
         })) : [])
     ];
@@ -73,7 +73,7 @@ function Controls({isLive=false, leagues=[], selectedDate, onDateChange, selecte
     }
 
     const handleCategoryClick = (category) => {
-        setSelectedCategory(category);
+        setSelectedCategory(category.id);
         if (category.id === 'all') {
             onLeagueChange && onLeagueChange(null);
         } else if (category.league) {
@@ -183,10 +183,13 @@ function Controls({isLive=false, leagues=[], selectedDate, onDateChange, selecte
                         categories.map(category => {
                             return (<button
                                 key={category.id}
-                                className={`filter-btn ${category === selectedCategory ? "active" : ""}`}
+                                className={`filter-btn ${category.id === selectedCategory ? "active" : ""}`}
                                 onClick={() => handleCategoryClick(category)}
                             >
-                                <i className={`fas ${category.icon}`}></i>
+                                {
+                                    ["fa-fire", "fa-star", "fa-futbol"].includes(category.icon) ? <i className={`fas ${category.icon}`}></i> :
+                                    <img src={`https://img.sofascore.com/api/v1/unique-tournament/${category.icon}/image`} alt="" className=''/>
+                                }
                                 {category.label}
                             </button>)
                         })

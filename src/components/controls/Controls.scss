@@ -9,9 +9,17 @@
     box-shadow: var(--shadow);
     position: relative; // Added for absolute positioning of the modal
 
+    @media screen and (max-width: 1501px) {
+        margin-bottom: 10px;
+        padding: 8px;
+    }
+
     .date-navigation {
         display: flex;
         gap: 15px;
+        @media screen and (max-width: 1501px) {
+            gap: 8px;
+        }
         .date-btn {
             background: rgba(255, 255, 255, 0.1);
             border: none;
@@ -61,6 +69,11 @@
         &:hover {
             background: #2a4db0;
             transform: translateY(-2px);
+        }
+
+        @media screen and (max-width: 1501px) {
+            padding: 6px 10px;
+            gap: 4px;
         }
     }
 
@@ -122,6 +135,11 @@
     gap: 10px;
     //flex-wrap: wrap;
 
+    @media screen and (max-width: 1501px) {
+        margin-bottom: 8px;
+        gap: 5px;
+    }
+
     .filters{
         margin-bottom: 0px;
     }
@@ -146,6 +164,12 @@
                 color: var(--text-secondary);
             }
         }
+
+        @media screen and (max-width: 1501px) {
+            padding: 6px 10px;
+            gap: 5px;
+            font-size: 0.7rem;
+        }
     }
 }
 
@@ -156,6 +180,12 @@
     margin-bottom: 25px;
     overflow-x: auto;
     padding-bottom: 10px;
+
+    @media screen and (max-width: 1501px) {
+        margin-bottom: 10px;
+        padding-bottom: 5px;
+        gap: 8px;
+    }
     .filter-btn {
         background: var(--card-bg);
         border: none;
@@ -168,9 +198,14 @@
         align-items: center;
         gap: 8px;
 
-        padding: 12px 25px;
         font-weight: 500;
         white-space: nowrap;
+
+        @media screen and (max-width: 1501px){
+            padding: 5px 6px;
+            gap: 4px;
+        }
+
         &:hover, &.active {
             background: var(--accent);
             color: var(--text);
@@ -181,6 +216,18 @@
         }
         i {
             font-size: 0.9rem;
+        }
+
+        img{
+            width: 2rem;
+            height: 2rem;
+            object-fit: fill;
+            object-position: center;
+            overflow: hidden;
+            @media screen and (max-width: 1501px){
+                width: 1rem;
+                height: 1rem;
+            }
         }
     }
     &::-webkit-scrollbar {

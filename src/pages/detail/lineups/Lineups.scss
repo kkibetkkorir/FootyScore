@@ -15,6 +15,18 @@
             margin-bottom: 20px;
             padding-bottom: 10px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+            img{
+                width: 2rem;
+                height: 2rem;
+                object-fit: fill;
+                object-position: center;
+                overflow: hidden;
+                @media screen and (max-width: 1501px){
+                    width: 1.2rem;
+                    height: 1.2rem;
+                }
+            }
         }
         .team-lineup {
             display: flex;

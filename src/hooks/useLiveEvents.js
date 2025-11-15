@@ -2,33 +2,54 @@
 import { useState, useEffect, useRef } from 'react';
 import { useSofaScoreApi } from './useSofaScoreApi';
 
-export const useLiveEvents = (sport = 'football', refreshInterval = 30000) => {
+export const useLiveEvents = (sport = 'football', pollInterval = 15000) => {
   const { getLiveEvents, loading, error } = useSofaScoreApi();
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState(null);
   const intervalRef = useRef();
 
   const fetchLiveEvents = async () => {
     try {
-      const data = await getLiveEvents(sport);
-      setEvents(data?.events || []);
+      const liveEvents = await getLiveEvents(sport);
+      setEvents(liveEvents?.events || []);
     } catch (err) {
       console.error('Error fetching live events:', err);
     }
   };
 
-  useEffect(() => {
-    fetchLiveEvents(); // Initial fetch
-
-    if (refreshInterval > 0) {
-      intervalRef.current = setInterval(fetchLiveEvents, refreshInterval);
+  // Start polling
+  const startPolling = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
     }
 
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [sport, refreshInterval]);
+    intervalRef.current = setInterval(() => {
+      fetchLiveEvents();
+    }, pollInterval);
+  };
 
-  return { events, loading, error, refetch: fetchLiveEvents };
+  // Stop polling
+  const stopPolling = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    fetchLiveEvents(); // Initial fetch
+    startPolling(); // Start polling
+
+    return () => {
+      stopPolling(); // Cleanup on unmount
+    };
+  }, [sport]);
+
+  return {
+    events,
+    loading,
+    error,
+    refetch: fetchLiveEvents,
+    startPolling,
+    stopPolling
+  };
 };

@@ -77,6 +77,7 @@ function MatchDetails() {
             person: "Martin Ødegaard"
         }
     ]
+
   return (
     <div className="tab-content active" id="match-details">
         <h2>Match Statistics</h2>

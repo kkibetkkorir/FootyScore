@@ -1,8 +1,8 @@
 // hooks/useMatchData.js
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSofaScoreApi } from './useSofaScoreApi';
 
-export const useMatchData = (matchId) => {
+export const useMatchData = (matchId, pollInterval = 10000) => {
   const {
     getMatchById,
     getMatchStatistics,
@@ -20,6 +20,8 @@ export const useMatchData = (matchId) => {
     lineups: null,
     h2h: null
   });
+
+  const intervalRef = useRef();
 
   const fetchMatchData = async () => {
     if (!matchId) return;
@@ -45,14 +47,42 @@ export const useMatchData = (matchId) => {
     }
   };
 
+  // Start polling
+  const startPolling = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+
+    intervalRef.current = setInterval(() => {
+      fetchMatchData();
+    }, pollInterval);
+  };
+
+  // Stop polling
+  const stopPolling = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
+
   useEffect(() => {
-    fetchMatchData();
+    if (matchId) {
+      fetchMatchData(); // Initial fetch
+      startPolling(); // Start polling
+    }
+
+    return () => {
+      stopPolling(); // Cleanup on unmount or matchId change
+    };
   }, [matchId]);
 
   return {
     ...matchData,
     loading,
     error,
-    refetch: fetchMatchData
+    refetch: fetchMatchData,
+    startPolling,
+    stopPolling
   };
 };

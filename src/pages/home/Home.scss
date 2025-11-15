@@ -338,7 +338,7 @@
                         font-weight: 700;
                     }
 
-                    @media screen {
+                    @media screen and (max-width: 576px) {
                         padding: 4px;
                         .option-name{
                             font-size: 0.8rem;
@@ -347,6 +347,19 @@
 
                         .option-odds {
                             font-size: 1rem;
+                            font-weight: 600;
+                        }
+                    }
+
+                    @media screen and (max-width: 1501px) {
+                        padding: 2px;
+                        .option-name{
+                            font-size: 0.7rem;
+                            margin-bottom: 2px;
+                        }
+
+                        .option-odds {
+                            font-size: .7rem;
                             font-weight: 600;
                         }
                     }
@@ -536,4 +549,78 @@
     0% { color: var(--text); }
     50% { color: var(--highlight); }
     100% { color: var(--text); }
+}
+
+/* Add to your Detail.scss or Home.scss */
+.polling-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border: 1px solid #e9ecef;
+}
+
+.polling-status {
+    flex: 1;
+}
+
+.polling-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.polling-indicator.active {
+    color: #28a745;
+}
+
+.polling-indicator.paused {
+    color: #6c757d;
+}
+
+.polling-toggle-btn, .refresh-btn {
+    padding: 8px 16px;
+    border: 1px solid #007bff;
+    background: white;
+    color: #007bff;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.polling-toggle-btn:hover, .refresh-btn:hover {
+    background: #007bff;
+    color: white;
+}
+
+.refresh-btn {
+    border-color: #28a745;
+    color: #28a745;
+}
+
+.refresh-btn:hover {
+    background: #28a745;
+    color: white;
+}
+
+.live-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #dc3545;
+    border-radius: 50%;
+    margin-left: 5px;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.4; }
+    100% { opacity: 1; }
 }
