@@ -1,6 +1,13 @@
+import { useEffect } from 'react'
 import './Lineups.scss'
+import { useNavigate } from 'react-router-dom';
 
 function Lineups({ match, lineups, loading }) {
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        lineups && console.log(lineups)
+    }, [lineups])
 
   return (
     <div className="lineups">
@@ -16,7 +23,7 @@ function Lineups({ match, lineups, loading }) {
             <div className="team-lineup">
                 {
                     lineups.home.filter(player => !player.substitute).map(player => {
-                        return (<div className="player">
+                        return (<div className="player" onClick={() => navigate(`/player/${player.player.id}`)}>
                             <div className="player-number" style={{ background: player.position === 1 && `linear-gradient(135deg, var(--accent), #${lineups.homeColor.goalkeeper.outline})`, color: player.position === 1 && `linear-gradient(135deg, var(--accent), #${lineups.homeColor.goalkeeper.number})` }}>{player.shirtNumber}</div>
                             <div className="player-name">{player.player.name}</div>
                             <div className="player-position">{player.positionName}</div>

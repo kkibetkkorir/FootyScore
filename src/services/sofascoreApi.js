@@ -1,48 +1,23 @@
 // services/sofascoreApi.js
 import axios from 'axios';
 
-// List of public CORS proxies (rotate through them)
-const CORS_PROXIES = [
-  'https://cors-anywhere.herokuapp.com/',
-  'https://api.allorigins.win/raw?url=',
-  'https://corsproxy.io/?',
-  'https://proxy.cors.sh/',
-  'https://crossorigin.me/',
-  'https://cors-proxy.htmldriven.com/?url=',
-];
+// Direct SofaScore API URL
+const BASE_URL = 'https://api.sofascore.com/';
 
-// Get a random proxy from the list
-const getRandomProxy = () => {
-  return CORS_PROXIES[Math.floor(Math.random() * CORS_PROXIES.length)];
-};
-
-// SofaScore base URL
-const SOFASCORE_BASE = 'https://api.sofascore.com/';
-
+// Create axios instance with base configuration
 const apiClient = axios.create({
-  timeout: 15000,
+  baseURL: BASE_URL,
+  timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
 });
 
-// Request interceptor to add CORS proxy
+// Request interceptor
 apiClient.interceptors.request.use(
   (config) => {
-    const proxy = getRandomProxy();
-    const targetUrl = SOFASCORE_BASE + config.url;
-
-    // Different proxies have different URL formats
-    if (proxy.includes('allorigins.win') || proxy.includes('corsproxy.io') || proxy.includes('cors-proxy.htmldriven.com')) {
-      config.url = proxy + encodeURIComponent(targetUrl);
-    } else {
-      config.url = proxy + targetUrl;
-    }
-
-    console.log(`🔧 Using proxy: ${proxy.substring(0, 30)}...`);
-    console.log(`🌐 Final URL: ${config.url.substring(0, 80)}...`);
-
+    console.log('Making API request to:', config.url);
     return config;
   },
   (error) => Promise.reject(error)
@@ -50,22 +25,9 @@ apiClient.interceptors.request.use(
 
 // Response interceptor
 apiClient.interceptors.response.use(
-  (response) => {
-    console.log(`✅ Success: ${response.status}`);
-    return response;
-  },
+  (response) => response,
   (error) => {
-    console.error('❌ Proxy Error:', {
-      message: error.message,
-      status: error.response?.status,
-      proxy: error.config?.url?.substring(0, 50)
-    });
-
-    // Retry with a different proxy if this one fails
-    if (error.response?.status >= 400) {
-      console.log('🔄 Retrying with different proxy...');
-    }
-
+    console.error('API Error:', error);
     return Promise.reject(error);
   }
 );
@@ -207,70 +169,6 @@ export const sofascoreApi = {
   // Tournament statistics with filters
   getTournamentStatsWithFilters: (tournamentId, seasonId, params = {}) =>
     apiClient.get(`api/v1/unique-tournament/${tournamentId}/season/${seasonId}/statistics`, { params }),
-
-  // ===== TESTING METHODS =====
-
-  // Test all proxies to find which ones work
-  testAllProxies: async () => {
-    console.log('🧪 Testing all CORS proxies...');
-
-    const results = [];
-
-    for (let i = 0; i < CORS_PROXIES.length; i++) {
-      const proxy = CORS_PROXIES[i];
-      try {
-        console.log(`Testing proxy ${i + 1}/${CORS_PROXIES.length}: ${proxy.substring(0, 30)}...`);
-
-        const testUrl = proxy.includes('allorigins.win') || proxy.includes('corsproxy.io') || proxy.includes('cors-proxy.htmldriven.com')
-          ? proxy + encodeURIComponent(SOFASCORE_BASE + 'api/v1/sport/football/events/live')
-          : proxy + SOFASCORE_BASE + 'api/v1/sport/football/events/live';
-
-        const response = await axios.get(testUrl, { timeout: 10000 });
-        results.push({ proxy, success: true, status: response.status });
-        console.log(`✅ Proxy ${i + 1} SUCCESS`);
-      } catch (error) {
-        results.push({
-          proxy,
-          success: false,
-          error: error.message,
-          status: error.response?.status
-        });
-        console.log(`❌ Proxy ${i + 1} FAILED: ${error.message}`);
-      }
-
-      // Small delay between tests
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-
-    return results;
-  },
-
-  // Get all available proxies
-  getAllProxies: () => CORS_PROXIES,
-
-  // Force use specific proxy
-  useSpecificProxy: (proxyIndex) => {
-    if (proxyIndex >= 0 && proxyIndex < CORS_PROXIES.length) {
-      const specificProxy = CORS_PROXIES[proxyIndex];
-      // Override the interceptor for next request
-      apiClient.interceptors.request.clear();
-      apiClient.interceptors.request.use(
-        (config) => {
-          const targetUrl = SOFASCORE_BASE + config.url;
-          if (specificProxy.includes('allorigins.win') || specificProxy.includes('corsproxy.io') || specificProxy.includes('cors-proxy.htmldriven.com')) {
-            config.url = specificProxy + encodeURIComponent(targetUrl);
-          } else {
-            config.url = specificProxy + targetUrl;
-          }
-          console.log(`🔧 Using specific proxy: ${specificProxy.substring(0, 30)}...`);
-          return config;
-        },
-        (error) => Promise.reject(error)
-      );
-      return `Using proxy: ${specificProxy}`;
-    }
-    throw new Error('Invalid proxy index');
-  }
 };
 
 export default sofascoreApi;

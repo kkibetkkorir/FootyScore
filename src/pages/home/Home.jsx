@@ -157,7 +157,7 @@ function Home() {
             {/* Live Matches Section */}
             <div className="section-header">
                 <h2><i className="fas fa-bolt"></i> Live Matches</h2>
-                <NavLink to="/live" className="view-all">View All {filteredEvents && filteredEvents.length}</NavLink>
+                <NavLink to="/live" className="view-all">View All {filteredEvents && filteredEvents.length} <i class="fas fa-solid fa-arrow-right"></i></NavLink>
             </div>
 
             <div className="matches-grid">
@@ -251,7 +251,7 @@ function Home() {
 
             <div className="section-header">
                 <h2><i className="fas fa-calendar-alt"></i> Upcoming Matches</h2>
-                <NavLink to="/fixtures" className="view-all">View All {upcoming && upcoming.length}</NavLink>
+                <NavLink to="/fixtures" className="view-all">View All {upcoming && upcoming.length} <i class="fas fa-solid fa-arrow-right"></i></NavLink>
             </div>
 
             <div className="matches-grid">
@@ -317,7 +317,7 @@ function Home() {
                 <>
                     <div className="section-header">
                         <h2><i className="fas fa-history"></i> Recent Results</h2>
-                        <NavLink to="/" className="view-all">View All {recent && recent.length}</NavLink>
+                        <NavLink to="/" className="view-all">View All {recent && recent.length} <i class="fas fa-solid fa-arrow-right"></i></NavLink>
                     </div>
 
                     <div className="matches-grid">

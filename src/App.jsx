@@ -9,6 +9,8 @@ import Leagues from "./pages/leagues/Leagues";
 import { useState } from "react";
 import Fixtures from "./pages/home/Fixtures";
 import LiveMatches from "./pages/home/LiveMatches";
+import Player from "./pages/player/Player";
+//import Tournaments from "./pages/leagues/Tournaments";
 
 const Layout = () => {
   const [visible, setVisible] = useState(false);
@@ -55,6 +57,10 @@ const router = createBrowserRouter([
         path: "/leagues",
         element: <Leagues />
       },
+      {
+        path: "/player/:id",
+        element: <Player />
+      }
     ]
   },
 ]);

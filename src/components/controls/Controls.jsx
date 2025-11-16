@@ -35,7 +35,7 @@ function Controls({isLive=false, leagues=[], selectedDate, onDateChange, selecte
         const today = new Date();
 
         if (currentDate.toDateString() === today.toDateString()) {
-            return currentDate.toLocaleDateString('en-US', options) + ' <span style="color: var(--highlight);">(Today)</span>';
+            return currentDate.toLocaleDateString('en-US', options) + ' <span style={{color: var(--highlight);">(Today)</span>';
         } else {
             return currentDate.toLocaleDateString('en-US', options);
         }
