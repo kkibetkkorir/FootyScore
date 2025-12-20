@@ -14,6 +14,27 @@ function Fixtures() {
     const [filteredFixtures, setFilteredFixtures] = useState(null);
     const navigate = useNavigate();
 
+    // Using fetch with async/await
+async function fetchBetikaData() {
+    try {
+        const response = await fetch('https://api.betika.com/v1/uo/sport?page=1&limit=1000&id=14');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Response:', data);
+        
+        // If you want to see it formatted in the console:
+        console.log('Formatted Response:', JSON.stringify(data, null, 2));
+        
+        return data;
+    } catch (error) {
+        console.error('Error fetching data:', error);
+    }
+}
+
     // Helper functions
     const formatMatchDate = (timestamp) => {
         const matchDate = new Date(timestamp * 1000);
@@ -82,6 +103,8 @@ function Fixtures() {
         }
 
         setFilteredFixtures(filtered);
+        // Call the function
+fetchBetikaData();
     }, [fixtures, selectedLeague, searchQuery]);
 
     return (
