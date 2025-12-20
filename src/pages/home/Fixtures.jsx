@@ -17,7 +17,7 @@ function Fixtures() {
     // Using fetch with async/await
 async function fetchBetikaData() {
     try {
-        const response = await fetch('https://api.betika.com/v1/uo/sport?page=1&limit=1000&id=14');
+        const response = await fetch('https://api.odi.site/sportsbook/v1?sport_id=soccer&day=&country_id=&sort_by=&sub_type_id=&competition_id=&hour=&filter=&cs=&hs=&sportsbook=sportsbook&ua=Mozilla%2F5.0+(Windows+NT+10.0%3B+Win64%3B+x64)+AppleWebKit%2F537.36+(KHTML,+like+Gecko)+Chrome%2F143.0.0.0+Safari%2F537.36+Edg%2F143.0.0.0&resource=sport');
         
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
