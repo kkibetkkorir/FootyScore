@@ -17,7 +17,7 @@ function Fixtures() {
     // Using fetch with async/await
 async function fetchBetikaData() {
     try {
-        const response = await fetch('https://api.odi.site/sportsbook/v1?sport_id=soccer&day=&country_id=&sort_by=&sub_type_id=&competition_id=&hour=&filter=&cs=&hs=&sportsbook=sportsbook&ua=Mozilla%2F5.0+(Windows+NT+10.0%3B+Win64%3B+x64)+AppleWebKit%2F537.36+(KHTML,+like+Gecko)+Chrome%2F143.0.0.0+Safari%2F537.36+Edg%2F143.0.0.0&resource=sport');
+        const response = await fetch('https://www.sofascore.com/api/v1/sofascore-news/en/posts?categories=news');
         
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
