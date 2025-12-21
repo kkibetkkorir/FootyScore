@@ -17,7 +17,7 @@ function Fixtures() {
     // Using fetch with async/await
 async function fetchBetikaData() {
     try {
-        const response = await fetch('https://www.sofascore.com/api/v1/sofascore-news/en/posts?categories=news');
+        const response = await fetch('https://webws.365scores.com/web/standings/?appTypeId=5&langId=1&timezoneName=Africa/Nairobi&userCountryId=144&competitions=17&live=false&isPreview=true&stageNum=1&seasonNum=124&lastUpdateId=5498991936');
         
         if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
