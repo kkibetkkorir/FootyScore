@@ -5,41 +5,7 @@ import { BETTING_FREE } from '../../constants'
 import { useLiveEvents } from '../../hooks/useLiveEvents';
 import { useEffect, useState } from 'react';
 import { useScheduledEvents } from '../../hooks/useScheduledEvents';
-import axios from 'axios';
 
-// Direct SofaScore API URL
-const BASE_URL = 'https://cms-livescore.football365.com/';
-
-// Create axios instance with base configuration
-const apiClient = axios.create({
-  baseURL: BASE_URL,
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'User-Agent': 'MCP-Server',//'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Mobile Safari/537.36'
-  },
-});
-
-// Request interceptor
-apiClient.interceptors.request.use(
-  (config) => {
-    console.log('Making API request to:', config.url);
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-// Response interceptor
-apiClient.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    console.error('API Error:', error);
-    return Promise.reject(error);
-  }
-);
-
-const getScheduledEvents = (date) => apiClient.get(`api/football/seven-day-matches?type=all&date=${date.toISOString().split('T')[0]}`),
 
 function Home() {
     const navigate = useNavigate();
@@ -177,7 +143,10 @@ function Home() {
     }) : null;
 
     useEffect(() => {
-        console.log(getScheduledEvents(selectedDate))
+        fetch('https://cms-livescore.football365.com/api/football/seven-day-matches?type=all&date=2025-12-29')
+  .then(res => res.json())
+  .then(data => console.log(data))
+  .catch(err => console.error(err));
     }, [selectedDate]);
 
     return (
