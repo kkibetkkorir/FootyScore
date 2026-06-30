@@ -107,6 +107,13 @@ async function fetchBetikaData() {
 fetchBetikaData();
     }, [fixtures, selectedLeague, searchQuery]);
 
+    useEffect(() => {
+        fetch('https://cms-livescore.football365.com/api/football/seven-day-matches?type=all&date=2025-12-29')
+  .then(res => res.json())
+  .then(data => console.log(data))
+  .catch(err => console.error(err));
+    }, [selectedDate]);
+
     return (
         <div className="main-content">
             <Controls
