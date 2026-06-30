@@ -39,6 +39,8 @@ apiClient.interceptors.response.use(
   }
 );
 
+const getScheduledEvents = (date) => apiClient.get(`api/football/seven-day-matches?type=all&date=${date.toISOString().split('T')[0]}`),
+
 function Home() {
     const navigate = useNavigate();
 
@@ -51,8 +53,6 @@ function Home() {
     const [recent, setRecent] = useState(null);
     const [upcoming, setUpcoming] = useState(null);
     const [leagues, setLeagues] = useState(null);
-
-    const getScheduledEvents = (date) => apiClient.get(`api/football/seven-day-matches?type=all&date=${date.toISOString().split('T')[0]}`),
 
     // Helper functions
     const formatElapsedTime = (currentPeriodStartTimestamp, isSecondHalf = false) => {
