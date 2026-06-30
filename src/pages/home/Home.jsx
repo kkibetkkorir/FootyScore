@@ -147,7 +147,7 @@ function Home() {
   .then(res => res.json())
   .then(data => console.log(data))
   .catch(err => console.error(err));
-    }, [selectedDate]);
+    }, []);
 
     return (
         <div className="main-content">
